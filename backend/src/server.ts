@@ -1,26 +1,43 @@
-import express, { Request, Response } from "express";
-import { auth } from "express-openid-connect";
-import { CONFIG } from "./config";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { PrismaClient } from "@prisma/client";
+// import { auth } from "express-openid-connect";
+import { app, httpServer } from "./app";
+import { schema } from "./graphql/schema";
+import { checkEnv } from "./check-env";
+import { Context } from "./graphql/context";
 
-const app = express();
+const Main = async () => {
+  checkEnv();
 
-const port = CONFIG.PORT || 4040;
+  const server = new ApolloServer<Context>({
+    schema,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  });
 
-app.use(
-  auth({
-    issuerBaseURL: CONFIG.AUTH0_ISSUER_BASE_URL,
-    baseURL: CONFIG.BASE_URL,
-    clientID: CONFIG.AUTH0_CLIENT_ID,
-    secret: CONFIG.SECRET,
-    authRequired: false,
-    auth0Logout: true,
-  })
-);
+  await server.start();
 
-app.get("/", (req: Request, res: Response) => {
-  res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
-});
+  const prisma = new PrismaClient();
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  app.use(
+    "/graphql",
+    expressMiddleware(server, {
+      context: async ({ req, res }) => ({
+        prisma,
+        req,
+        res,
+      }),
+    })
+  );
+
+  const port = process.env.PORT || 4040;
+
+  await new Promise<void>((resolve) => httpServer.listen({ port }, resolve));
+
+  console.info(`---\n🚀 Server ready at: http://localhost:${port}/graphql`);
+};
+
+Main().catch((error) => {
+  console.error("Error starting server\n---\n", error?.message || error, "\n---");
 });
