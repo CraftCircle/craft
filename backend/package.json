@@ -5,10 +5,17 @@
   "author": "Bill Armsty",
   "license": "MIT",
   "scripts": {
+    "generate": "npx prisma generate",
+    "prebuild": "yarn generate",
+    "prisma:studio": "npx prisma studio",
     "start": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
     "dev": "NODE_ENV=development ts-node-dev --transpile-only --no-notify  src/server.ts"
   },
+   "prisma": {
+    "seed": "ts-node-dev prisma/seed"
+  },
+  
   "dependencies": {
     "@apollo/server": "^4.10.5",
     "@prisma/client": "^5.18.0",
