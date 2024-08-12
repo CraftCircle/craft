@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { ParamsDictionary } from "express-serve-static-core";
 import { ParsedQs } from "qs";
+import { IJwtPayload } from "../typings";
 
 export const prisma = new PrismaClient();
 export interface Context extends BaseContext {
@@ -15,4 +16,5 @@ export interface Context extends BaseContext {
     ParsedQs,
     Record<string, any>
   >;
+  user?: IJwtPayload;
 }

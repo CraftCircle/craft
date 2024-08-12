@@ -12,13 +12,15 @@ const rules = {
 
 export const permissions = shield(
   {
-    Query: {
-      currentUser: rules.isAuthenticatedUser,
-      users: rules.isAdmin,
-    },
-    Mutation: {
-      updateUser: or(rules.isAdmin, rules.isAuthenticatedUser),
-    },
+    // Query: {
+    //   currentUser: rules.isAuthenticatedUser,
+    //   users: rules.isAdmin,
+    // },
+    // Mutation: {
+    //   updateUser: or(rules.isAdmin, rules.isAuthenticatedUser),
+    // },
   },
-  { allowExternalErrors: true }
+  { 
+    // allowExternalErrors: true 
+  }
 );

@@ -31,7 +31,7 @@ const Main = async () => {
     })
   );
 
-  const port = process.env.PORT || 4040;
+  const port = process.env.PORT || 5000;
 
   await new Promise<void>((resolve) => httpServer.listen({ port }, resolve));
 

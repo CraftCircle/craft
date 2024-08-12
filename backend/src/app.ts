@@ -8,7 +8,7 @@ import { CONFIG } from "./config";
 const app = express();
 const httpServer = http.createServer(app);
 
-const port = CONFIG.PORT || 4040;
+const port = CONFIG.PORT || 5000;
 
 app.set("trust proxy", true);
 app.use(cors<cors.CorsRequest>());
@@ -43,8 +43,8 @@ app.get("/", (req: Request, res: Response) => {
   res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Server running on port ${port}`);
+// });
 
 export { app, httpServer };
