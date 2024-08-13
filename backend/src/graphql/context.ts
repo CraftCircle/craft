@@ -15,6 +15,6 @@ export interface Context extends BaseContext {
     any,
     ParsedQs,
     Record<string, any>
-  >;
-  user?: IJwtPayload;
+    >;
+    user?: IJwtPayload;
 }

@@ -8,11 +8,22 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 scalar DateTime
 
 type Mutation {
-  dummyMutation(message: String!): String!
+  createUser(data: UserRegisterInput!): User!
 }
 
 type Query {
-  users: [User!]!
+  currentUser: User
+  users(orderBy: UserOrderByInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum SortOrder {
+  asc
+  desc
 }
 
 type User {
@@ -21,4 +32,22 @@ type User {
   id: ID!
   password: String!
   updatedAt: DateTime!
+}
+
+input UserOrderByInput {
+  createdAt: SortOrder
+}
+
+input UserRegisterInput {
+  email: String!
+  password: String!
+}
+
+input UserWhereInput {
+  email: String
+}
+
+input UserWhereUniqueInput {
+  email: String
+  id: String
 }

@@ -21,6 +21,6 @@ export const permissions = shield(
     // },
   },
   { 
-    // allowExternalErrors: true 
+    allowExternalErrors: true 
   }
 );

@@ -3,23 +3,11 @@ import { DateTime } from "nexus-prisma/scalars";
 import { makeSchema } from "nexus";
 import { join } from "path";
 import { permissions } from "./permissions";
-import { 
-  $Mutation,
-   $Query } from "./resolvers";
-import { 
-  // $Enum, $Input, 
-  $Model 
-} from "./typedefs";
+import { $Mutation, $Query } from "./resolvers";
+import { $Enum, $Input, $Model } from "./typedefs";
 
 const schemaWithoutPermissions = makeSchema({
-  types: [
-    $Query,
-    $Mutation,
-    //  $Input,
-    $Model,
-    //  $Enum
-    DateTime,
-  ],
+  types: [$Query, $Mutation, $Input, $Model, $Enum, DateTime],
   shouldGenerateArtifacts: process.env.NODE_ENV === "development",
   outputs: {
     schema: join(__dirname, "generated/schema.gen.graphql"),

@@ -1,7 +1,13 @@
-import { UserWhereUniqueInput, UserRegisterInput } from "./user";
+import {
+  UserWhereUniqueInput,
+  UserRegisterInput,
+  UserWhereInput,
+  UserOrderByInput,
+} from "./user";
 
 export const $Input = {
-    UserWhereUniqueInput,
-    UserRegisterInput,
-    
+  UserWhereUniqueInput,
+  UserRegisterInput,
+  UserWhereInput,
+  UserOrderByInput,
 };

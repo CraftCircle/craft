@@ -29,9 +29,25 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  UserOrderByInput: { // input type
+    createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
+  }
+  UserRegisterInput: { // input type
+    email: string; // String!
+    password: string; // String!
+  }
+  UserWhereInput: { // input type
+    email?: string | null; // String
+  }
+  UserWhereUniqueInput: { // input type
+    email?: string | null; // String
+    id?: string | null; // String
+  }
 }
 
 export interface NexusGenEnums {
+  Role: "ADMIN" | "USER"
+  SortOrder: "asc" | "desc"
 }
 
 export interface NexusGenScalars {
@@ -63,13 +79,14 @@ export interface NexusGenUnions {
 
 export type NexusGenRootTypes = NexusGenObjects
 
-export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars
+export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnums
 
 export interface NexusGenFieldTypes {
   Mutation: { // field return type
-    dummyMutation: string; // String!
+    createUser: NexusGenRootTypes['User']; // User!
   }
   Query: { // field return type
+    currentUser: NexusGenRootTypes['User'] | null; // User
     users: NexusGenRootTypes['User'][]; // [User!]!
   }
   User: { // field return type
@@ -83,9 +100,10 @@ export interface NexusGenFieldTypes {
 
 export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
-    dummyMutation: 'String'
+    createUser: 'User'
   }
   Query: { // field return type name
+    currentUser: 'User'
     users: 'User'
   }
   User: { // field return type name
@@ -99,8 +117,16 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
-    dummyMutation: { // args
-      message: string; // String!
+    createUser: { // args
+      data: NexusGenInputs['UserRegisterInput']; // UserRegisterInput!
+    }
+  }
+  Query: {
+    users: { // args
+      orderBy?: NexusGenInputs['UserOrderByInput'] | null; // UserOrderByInput
+      skip?: number | null; // Int
+      take?: number | null; // Int
+      where?: NexusGenInputs['UserWhereInput'] | null; // UserWhereInput
     }
   }
 }
@@ -113,9 +139,9 @@ export interface NexusGenTypeInterfaces {
 
 export type NexusGenObjectNames = keyof NexusGenObjects;
 
-export type NexusGenInputNames = never;
+export type NexusGenInputNames = keyof NexusGenInputs;
 
-export type NexusGenEnumNames = never;
+export type NexusGenEnumNames = keyof NexusGenEnums;
 
 export type NexusGenInterfaceNames = never;
 

@@ -8,7 +8,7 @@ import { CONFIG } from "./config";
 const app = express();
 const httpServer = http.createServer(app);
 
-const port = CONFIG.PORT || 5000;
+const port = CONFIG.PORT || 4040;
 
 app.set("trust proxy", true);
 app.use(cors<cors.CorsRequest>());
@@ -37,14 +37,15 @@ app.use(
   })
 );
 
-app.get("/health", (_, res) => res.send("OK"));
+app.get("/health", (_, res) => res.send("Up and running"));
 
-app.get("/", (req: Request, res: Response) => {
-  res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
+app.get("/test", (req, res) => {
+  if (req.oidc.isAuthenticated()) {
+    return res.send(`Authenticated user: ${JSON.stringify(req.oidc.user)}`);
+  } else {
+    return res.send("User not authenticated");
+  }
 });
 
-// app.listen(port, () => {
-//   console.log(`Server running on port ${port}`);
-// });
 
 export { app, httpServer };

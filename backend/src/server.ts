@@ -2,11 +2,12 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { PrismaClient } from "@prisma/client";
-// import { auth } from "express-openid-connect";
 import { app, httpServer } from "./app";
 import { schema } from "./graphql/schema";
 import { checkEnv } from "./check-env";
 import { Context } from "./graphql/context";
+import { permissions } from "./graphql/permissions";
+import { IJwtPayload } from "./typings";
 
 const Main = async () => {
   checkEnv();
@@ -23,15 +24,28 @@ const Main = async () => {
   app.use(
     "/graphql",
     expressMiddleware(server, {
-      context: async ({ req, res }) => ({
-        prisma,
-        req,
-        res,
-      }),
+      context: async ({ req, res }) => {
+        let user: IJwtPayload | undefined;
+
+        if (req.oidc.isAuthenticated() && req.oidc.user) {
+          const oidcUser = req.oidc.user;
+
+          user = {
+            id: oidcUser.sub || "",
+            email: oidcUser.email || "",
+          };
+        }
+        return {
+          prisma,
+          req,
+          res,
+          user,
+        };
+      },
     })
   );
 
-  const port = process.env.PORT || 5000;
+  const port = process.env.PORT || 4040;
 
   await new Promise<void>((resolve) => httpServer.listen({ port }, resolve));
 
@@ -39,5 +53,9 @@ const Main = async () => {
 };
 
 Main().catch((error) => {
-  console.error("Error starting server\n---\n", error?.message || error, "\n---");
+  console.error(
+    "Error starting server\n---\n",
+    error?.message || error,
+    "\n---"
+  );
 });
