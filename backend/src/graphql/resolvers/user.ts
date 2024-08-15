@@ -97,6 +97,8 @@ export const UserMutation = extendType({
             email: data.email,
             password: hashedPassword,
             auth0Id: auth0Id,
+            name: data.name,
+            role: data.role || "USER",
           },
         });
 

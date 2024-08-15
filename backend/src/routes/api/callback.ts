@@ -9,7 +9,6 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
     const idToken = req.oidc.idToken;
 
     const decodedToken = getJwtToken({ idToken });
-    
 
     if (!decodedToken) {
       return res
@@ -43,10 +42,15 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
         user: existingUser,
       });
     } else {
+      const role = req.query.role === "ADMIN" ? "ADMIN" : "USER";
+      console.log(role, req.query.role);
+      
       const newUser = await prisma.user.create({
         data: {
           auth0Id: user.sub,
           email: user.email,
+          name: user.name,
+          role: role,
         },
       });
 
@@ -57,11 +61,9 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
     }
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        error: "Internal Server Error on callbackRouter",
-        message: (error as Error).message,
-      });
+    res.status(500).json({
+      error: "Internal Server Error on callbackRouter",
+      message: (error as Error).message,
+    });
   }
 });

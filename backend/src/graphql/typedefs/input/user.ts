@@ -5,6 +5,8 @@ export const UserRegisterInput = inputObjectType({
   definition(t) {
     t.nonNull.string("email");
     t.nonNull.string("password");
+    t.nullable.string("name");
+    t.field("role", { type: "Role" });
   },
 });
 
