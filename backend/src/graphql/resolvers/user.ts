@@ -70,9 +70,6 @@ export const UserMutation = extendType({
       resolve: async (_root, args, { prisma, user }) => {
         const { data } = removeEmpty(args);
 
-        console.log(user, data, 'user and data');
-        
-
         const auth0Id = user?.sub!;
 
         let existingUser = await prisma.user.findUnique({
@@ -84,8 +81,6 @@ export const UserMutation = extendType({
             where: { auth0Id: auth0Id },
           });
         }
-
-        console.log(existingUser);
 
         if (existingUser) {
           throw new GraphQLError("User already exists", {
