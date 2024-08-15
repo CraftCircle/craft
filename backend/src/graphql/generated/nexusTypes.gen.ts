@@ -34,7 +34,9 @@ export interface NexusGenInputs {
   }
   UserRegisterInput: { // input type
     email: string; // String!
+    name?: string | null; // String
     password: string; // String!
+    role?: NexusGenEnums['Role'] | null; // Role
   }
   UserWhereInput: { // input type
     email?: string | null; // String

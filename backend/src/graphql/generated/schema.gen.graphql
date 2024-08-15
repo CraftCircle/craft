@@ -40,7 +40,9 @@ input UserOrderByInput {
 
 input UserRegisterInput {
   email: String!
+  name: String
   password: String!
+  role: Role
 }
 
 input UserWhereInput {
