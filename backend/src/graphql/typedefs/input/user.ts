@@ -12,6 +12,7 @@ export const UserWhereUniqueInput = inputObjectType({
   name: "UserWhereUniqueInput",
   definition(t) {
     t.string("id");
+    t.string("auth0Id");
     t.string("email");
   },
 });

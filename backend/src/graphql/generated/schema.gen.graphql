@@ -30,7 +30,7 @@ type User {
   createdAt: DateTime!
   email: String!
   id: ID!
-  password: String!
+  password: String
   updatedAt: DateTime!
 }
 
@@ -48,6 +48,7 @@ input UserWhereInput {
 }
 
 input UserWhereUniqueInput {
+  auth0Id: String
   email: String
   id: String
 }

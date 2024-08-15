@@ -40,6 +40,7 @@ export interface NexusGenInputs {
     email?: string | null; // String
   }
   UserWhereUniqueInput: { // input type
+    auth0Id?: string | null; // String
     email?: string | null; // String
     id?: string | null; // String
   }
@@ -66,7 +67,7 @@ export interface NexusGenObjects {
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
     id: string; // ID!
-    password: string; // String!
+    password?: string | null; // String
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
 }
@@ -93,7 +94,7 @@ export interface NexusGenFieldTypes {
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
     id: string; // ID!
-    password: string; // String!
+    password: string | null; // String
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
 }

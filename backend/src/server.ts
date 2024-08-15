@@ -6,8 +6,8 @@ import { app, httpServer } from "./app";
 import { schema } from "./graphql/schema";
 import { checkEnv } from "./check-env";
 import { Context } from "./graphql/context";
-import { permissions } from "./graphql/permissions";
-import { IJwtPayload } from "./typings";
+import { conText } from "./graphql/helper/context";
+
 
 const Main = async () => {
   checkEnv();
@@ -24,24 +24,7 @@ const Main = async () => {
   app.use(
     "/graphql",
     expressMiddleware(server, {
-      context: async ({ req, res }) => {
-        let user: IJwtPayload | undefined;
-
-        if (req.oidc.isAuthenticated() && req.oidc.user) {
-          const oidcUser = req.oidc.user;
-
-          user = {
-            id: oidcUser.sub || "",
-            email: oidcUser.email || "",
-          };
-        }
-        return {
-          prisma,
-          req,
-          res,
-          user,
-        };
-      },
+      context: conText,
     })
   );
 

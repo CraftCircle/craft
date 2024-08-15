@@ -4,7 +4,6 @@ import { removeEmpty } from "../helper/null";
 import { Context } from "../context";
 import { GraphQLError } from "graphql";
 import bcrypt from "bcrypt";
-import { or } from "graphql-shield";
 
 export const UserQuery = extendType({
   type: "Query",
@@ -68,14 +67,25 @@ export const UserMutation = extendType({
           })
         ),
       },
-      resolve: async (_root, args, { prisma }) => {
+      resolve: async (_root, args, { prisma, user }) => {
         const { data } = removeEmpty(args);
 
-        const existingUser = await prisma.user.findUnique({
-          where: {
-            email: data.email,
-          }
+        console.log(user, data, 'user and data');
+        
+
+        const auth0Id = user?.sub!;
+
+        let existingUser = await prisma.user.findUnique({
+          where: { email: data.email },
         });
+
+        if (!existingUser && auth0Id) {
+          existingUser = await prisma.user.findUnique({
+            where: { auth0Id: auth0Id },
+          });
+        }
+
+        console.log(existingUser);
 
         if (existingUser) {
           throw new GraphQLError("User already exists", {
@@ -91,6 +101,7 @@ export const UserMutation = extendType({
           data: {
             email: data.email,
             password: hashedPassword,
+            auth0Id: auth0Id,
           },
         });
 
