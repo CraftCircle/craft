@@ -70,7 +70,7 @@ export const UserMutation = extendType({
       resolve: async (_root, args, { prisma, user }) => {
         const { data } = removeEmpty(args);
 
-        const auth0Id = user?.sub!;
+        const auth0Id = user?.sub;
 
         let existingUser = await prisma.user.findUnique({
           where: { email: data.email },

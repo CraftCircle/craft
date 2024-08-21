@@ -8,7 +8,6 @@ import cookieSession from "cookie-session";
 import { auth0Config, CONFIG } from "./config";
 import { callbackRouter } from "./routes/api/callback";
 import { auth0Router } from "./routes/api/auth0";
-import { testRouter } from "./routes/test";
 
 export const app = express();
 export const httpServer = http.createServer(app);

@@ -1,12 +1,12 @@
-import express, { Request, Response } from "express";
+import { Request, Response, Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { getJwtToken } from "../../graphql/helper/auth";
 
-export const callbackRouter = express();
+export const callbackRouter = Router();
 
 callbackRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const idToken = req.oidc.idToken;
+    const idToken = req.oidc?.idToken;
 
     const decodedToken = getJwtToken({ idToken });
 
@@ -16,9 +16,23 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
         .json({ error: "Unauthorized", message: "Invalid token" });
     }
 
-    const user = req.oidc.user!;
+    const user = req.oidc?.user;
 
-    const auth0Id = user.sub;
+    if (!user) {
+      return res.status(400).json({
+        error: "Bad Request",
+        message: "User information not found",
+      });
+    }
+
+    const auth0Id = user?.sub;
+
+    if (!auth0Id && !user.email) {
+      return res.status(400).json({
+        error: "Bad Request",
+        message: "Missing required user identifiers",
+      });
+    }
 
     const prisma = new PrismaClient();
 
@@ -28,7 +42,7 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
       },
     });
 
-    if (!existingUser) {
+    if (!existingUser && user.email) {
       existingUser = await prisma.user.findUnique({
         where: {
           email: user.email,
@@ -41,10 +55,10 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
         message: "User already exists",
         user: existingUser,
       });
+      console.log(existingUser, "existingUser");
     } else {
       const role = req.query.role === "ADMIN" ? "ADMIN" : "USER";
-      console.log(role, req.query.role);
-      
+
       const newUser = await prisma.user.create({
         data: {
           auth0Id: user.sub,
