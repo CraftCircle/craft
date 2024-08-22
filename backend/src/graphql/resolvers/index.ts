@@ -7,11 +7,13 @@ export const $Query = {
     UserQuery,
     PostQuery,
     EventQuery,
+    TicketQuery
 
 };
 
 export const $Mutation = {
     UserMutation,
     PostMutation,
-    EventMutation
+    EventMutation,
+    TicketMutation
 };

@@ -1,5 +1,6 @@
 import { arg, extendType, intArg, nonNull } from "nexus";
 import { GraphQLError } from "graphql";
+import { Context } from "../context";
 
 export const TicketQuery = extendType({
   type: "Query",
@@ -42,7 +43,17 @@ export const TicketMutation = extendType({
           })
         ),
       },
-      resolve: async (_root, { data }, { prisma, user }) => {
+      resolve: async (_root, args, { prisma, user }: Context) => {
+        if (!user) {
+          throw new GraphQLError(
+            "You must be logged in to perform this action",
+            {
+              extensions: {
+                message: "MUST_BE_LOGGED_IN",
+              },
+            }
+          );
+        }
         if (user?.role !== "ADMIN") {
           throw new GraphQLError("Only admins can create tickets", {
             extensions: {
@@ -51,7 +62,7 @@ export const TicketMutation = extendType({
           });
         }
 
-        const { eventId, holderId } = data;
+        const { eventId } = args.data;
 
         const event = await prisma.event.findUnique({
           where: { id: eventId },
@@ -65,18 +76,6 @@ export const TicketMutation = extendType({
           });
         }
 
-        const holder = await prisma.user.findUnique({
-          where: { id: holderId },
-        });
-
-        if (!holder) {
-          throw new GraphQLError("Ticket holder not found", {
-            extensions: {
-              message: "HOLDER_NOT_FOUND",
-            },
-          });
-        }
-
         try {
           const newTicket = await prisma.ticket.create({
             data: {
@@ -84,7 +83,7 @@ export const TicketMutation = extendType({
                 connect: { id: eventId },
               },
               holder: {
-                connect: { id: holderId },
+                connect: { id: user.id },
               },
             },
           });

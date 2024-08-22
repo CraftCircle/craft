@@ -75,7 +75,6 @@ export const UserMutation = extendType({
 
         const auth0Id = user?.sub;
 
-        // Check for existing user by email or auth0Id
         let existingUser = await prisma.user.findFirst({
           where: {
             OR: [{ email: data.email }, { auth0Id }],
@@ -98,7 +97,6 @@ export const UserMutation = extendType({
             password: hashedPassword,
             auth0Id,
             name: data.name,
-            // role: data.role || "USER",
           },
         });
 

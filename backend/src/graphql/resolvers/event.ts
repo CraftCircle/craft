@@ -78,6 +78,16 @@ export const EventMutation = extendType({
         ),
       },
       resolve: async (_root, { data }, { prisma, user }) => {
+        if (!user) {
+          throw new GraphQLError(
+            "You must be logged in to perform this action",
+            {
+              extensions: {
+                message: "MUST_BE_LOGGED_IN",
+              },
+            }
+          );
+        }
         if (user?.role !== "ADMIN") {
           throw new GraphQLError("Only admins can create events", {
             extensions: {
@@ -134,7 +144,7 @@ export const EventMutation = extendType({
         }
 
         const currentUser = await prisma.user.findUnique({
-          where: { auth0Id: user.sub },
+          where: { email: user.email },
         });
 
         if (!currentUser) {
@@ -192,7 +202,7 @@ export const EventMutation = extendType({
         }
 
         const currentUser = await prisma.user.findUnique({
-          where: { auth0Id: user.sub },
+          where: { email: user.email },
         });
 
         if (!currentUser) {

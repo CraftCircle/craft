@@ -59,7 +59,7 @@ model Ticket {
     id        String   @id @default(uuid()) @map("_id")
     event     Event    @relation(fields: [eventId], references: [id])
     eventId   String
-    holder    User     @relation(fields: [holderId], references: [id])
-    holderId  String
+    holder    User?    @relation(fields: [holderId], references: [id])
+    holderId  String?
     createdAt DateTime @default(now())
 }

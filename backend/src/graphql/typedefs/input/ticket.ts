@@ -4,7 +4,6 @@ export const TicketCreateInput = inputObjectType({
   name: "TicketCreateInput",
   definition(t) {
     t.nonNull.string("eventId");
-    t.nonNull.string("holderId");
   },
 });
 

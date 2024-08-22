@@ -87,7 +87,6 @@ export const PostMutation = extendType({
           );
         }
 
-        console.log(user, "user"); 
 
         const currentUser = await prisma.user.findUnique({
           where: { email: user.email }, 
@@ -149,7 +148,7 @@ export const PostMutation = extendType({
         }
 
         const currentUser = await prisma.user.findUnique({
-          where: { auth0Id: user.sub }, 
+          where: { email: user.email }, 
         });
 
         if (!currentUser) {
@@ -202,7 +201,7 @@ export const PostMutation = extendType({
         }
 
         const currentUser = await prisma.user.findUnique({
-          where: { auth0Id: user.sub },
+          where: { email: user.email },
         });
 
         if (!currentUser) {
