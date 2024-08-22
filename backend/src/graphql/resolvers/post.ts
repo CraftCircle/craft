@@ -27,6 +27,9 @@ export const PostQuery = extendType({
             take,
             skip,
             orderBy,
+            include: {
+              author: true,
+            }
           });
         } catch (error: any) {
           return handlePrismaError(error);
@@ -48,6 +51,9 @@ export const PostQuery = extendType({
         try {
           return await prisma.post.findUnique({
             where,
+            include: {
+              author: true,
+            }
           });
         } catch (error: any) {
           return handlePrismaError(error);
@@ -143,7 +149,7 @@ export const PostMutation = extendType({
         }
 
         const currentUser = await prisma.user.findUnique({
-          where: { auth0Id: user.sub }, // Using `auth0Id` instead of `id`
+          where: { auth0Id: user.sub }, 
         });
 
         if (!currentUser) {

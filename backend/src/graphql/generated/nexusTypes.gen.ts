@@ -74,6 +74,24 @@ export interface NexusGenInputs {
   PostWhereUniqueInput: { // input type
     id?: string | null; // String
   }
+  TicketCreateInput: { // input type
+    eventId: string; // String!
+    holderId: string; // String!
+  }
+  TicketOrderByInput: { // input type
+    createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
+  }
+  TicketUpdateInput: { // input type
+    eventId?: string | null; // String
+    holderId?: string | null; // String
+  }
+  TicketWhereInput: { // input type
+    eventId?: string | null; // String
+    holderId?: string | null; // String
+  }
+  TicketWhereUniqueInput: { // input type
+    id?: string | null; // String
+  }
   UserOrderByInput: { // input type
     createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
   }
@@ -127,6 +145,10 @@ export interface NexusGenObjects {
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
   Query: {};
+  Ticket: { // root type
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    id: string; // ID!
+  }
   User: { // root type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
@@ -161,7 +183,9 @@ export interface NexusGenFieldTypes {
     createEvent: NexusGenRootTypes['Event']; // Event!
     createPost: NexusGenRootTypes['Post']; // Post!
     createUser: NexusGenRootTypes['User']; // User!
+    deleteEvent: NexusGenRootTypes['Event']; // Event!
     deletePost: NexusGenRootTypes['Post']; // Post!
+    updateEvent: NexusGenRootTypes['Event']; // Event!
     updatePost: NexusGenRootTypes['Post']; // Post!
   }
   Post: { // field return type
@@ -178,6 +202,12 @@ export interface NexusGenFieldTypes {
     post: NexusGenRootTypes['Post'] | null; // Post
     posts: NexusGenRootTypes['Post'][]; // [Post!]!
     users: NexusGenRootTypes['User'][]; // [User!]!
+  }
+  Ticket: { // field return type
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    event: NexusGenRootTypes['Event']; // Event!
+    holder: NexusGenRootTypes['User']; // User!
+    id: string; // ID!
   }
   User: { // field return type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
@@ -203,7 +233,9 @@ export interface NexusGenFieldTypeNames {
     createEvent: 'Event'
     createPost: 'Post'
     createUser: 'User'
+    deleteEvent: 'Event'
     deletePost: 'Post'
+    updateEvent: 'Event'
     updatePost: 'Post'
   }
   Post: { // field return type name
@@ -220,6 +252,12 @@ export interface NexusGenFieldTypeNames {
     post: 'Post'
     posts: 'Post'
     users: 'User'
+  }
+  Ticket: { // field return type name
+    createdAt: 'DateTime'
+    event: 'Event'
+    holder: 'User'
+    id: 'ID'
   }
   User: { // field return type name
     createdAt: 'DateTime'
@@ -241,8 +279,15 @@ export interface NexusGenArgTypes {
     createUser: { // args
       data: NexusGenInputs['UserRegisterInput']; // UserRegisterInput!
     }
+    deleteEvent: { // args
+      where: NexusGenInputs['EventWhereUniqueInput']; // EventWhereUniqueInput!
+    }
     deletePost: { // args
       where: NexusGenInputs['PostWhereUniqueInput']; // PostWhereUniqueInput!
+    }
+    updateEvent: { // args
+      data: NexusGenInputs['EventUpdateInput']; // EventUpdateInput!
+      where: NexusGenInputs['EventWhereUniqueInput']; // EventWhereUniqueInput!
     }
     updatePost: { // args
       data: NexusGenInputs['PostUpdateInput']; // PostUpdateInput!

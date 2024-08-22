@@ -23,6 +23,14 @@ import {
 
 } from "./event";
 
+import{
+  TicketWhereUniqueInput,
+  TicketCreateInput,
+  TicketUpdateInput,
+  TicketWhereInput,
+  TicketOrderByInput,
+} from "./ticket";
+
 export const $Input = {
   UserWhereUniqueInput,
   UserRegisterInput,
@@ -38,4 +46,9 @@ export const $Input = {
   EventUpdateInput,
   EventWhereInput,
   EventOrderByInput,
+  TicketWhereUniqueInput,
+  TicketCreateInput,
+  TicketUpdateInput,
+  TicketWhereInput,
+  TicketOrderByInput,
 };

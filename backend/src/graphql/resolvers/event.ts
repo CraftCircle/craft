@@ -27,6 +27,10 @@ export const EventQuery = extendType({
             take,
             skip,
             orderBy,
+            include: {
+              tickets: true,
+              createdBy: true,
+            },
           });
         } catch (error: any) {
           return handlePrismaError(error);
@@ -48,6 +52,10 @@ export const EventQuery = extendType({
         try {
           return await prisma.event.findUnique({
             where,
+            include: {
+              tickets: true,
+              createdBy: true,
+            },
           });
         } catch (error: any) {
           return handlePrismaError(error);
@@ -92,6 +100,127 @@ export const EventMutation = extendType({
           throw new GraphQLError(error.message, {
             extensions: {
               message: "EVENT_CREATION_FAILED",
+            },
+          });
+        }
+      },
+    });
+
+    //updateEvent
+    t.nonNull.field("updateEvent", {
+      type: "Event",
+      args: {
+        where: nonNull(
+          arg({
+            type: "EventWhereUniqueInput",
+          })
+        ),
+        data: nonNull(
+          arg({
+            type: "EventUpdateInput",
+          })
+        ),
+      },
+      resolve: async (_root, args, { prisma, user }: Context) => {
+        if (!user) {
+          throw new GraphQLError(
+            "You must be logged in to perform this action",
+            {
+              extensions: {
+                message: "MUST_BE_LOGGED_IN",
+              },
+            }
+          );
+        }
+
+        const currentUser = await prisma.user.findUnique({
+          where: { auth0Id: user.sub },
+        });
+
+        if (!currentUser) {
+          throw new GraphQLError("User not found", {
+            extensions: {
+              message: "USER_NOT_FOUND",
+            },
+          });
+        }
+        if (currentUser.role !== "ADMIN") {
+          throw new GraphQLError("Only admins can update events", {
+            extensions: {
+              message: "UNAUTHORIZED",
+            },
+          });
+        }
+
+        const { where, data } = removeEmpty(args);
+        try {
+          const updatedEvent = await prisma.event.update({
+            where,
+            data,
+          });
+          return updatedEvent;
+        } catch (error: any) {
+          throw new GraphQLError(error.message, {
+            extensions: {
+              message: "EVENT_UPDATE_FAILED",
+            },
+          });
+        }
+      },
+    });
+
+    //deleteEvent
+    t.nonNull.field("deleteEvent", {
+      type: "Event",
+      args: {
+        where: nonNull(
+          arg({
+            type: "EventWhereUniqueInput",
+          })
+        ),
+      },
+      resolve: async (_root, args, { prisma, user }: Context) => {
+        if (!user) {
+          throw new GraphQLError(
+            "You must be logged in to perform this action",
+            {
+              extensions: {
+                message: "MUST_BE_LOGGED_IN",
+              },
+            }
+          );
+        }
+
+        const currentUser = await prisma.user.findUnique({
+          where: { auth0Id: user.sub },
+        });
+
+        if (!currentUser) {
+          throw new GraphQLError("User not found", {
+            extensions: {
+              message: "USER_NOT_FOUND",
+            },
+          });
+        }
+
+        if (currentUser.role !== "ADMIN") {
+          throw new GraphQLError("Only admins can delete events", {
+            extensions: {
+              message: "UNAUTHORIZED",
+            },
+          });
+        }
+
+        const { where } = removeEmpty(args);
+        try {
+          const deletedEvent = await prisma.event.delete({
+            where,
+          });
+          return deletedEvent;
+        } catch (error: any) {
+          throw new GraphQLError(error.message, {
+            extensions: {
+              message: "EVENT_DELETE_FAILED",
             },
           });
         }

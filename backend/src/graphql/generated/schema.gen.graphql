@@ -54,7 +54,9 @@ type Mutation {
   createEvent(data: EventCreateInput!): Event!
   createPost(data: PostCreateInput!): Post!
   createUser(data: UserRegisterInput!): User!
+  deleteEvent(where: EventWhereUniqueInput!): Event!
   deletePost(where: PostWhereUniqueInput!): Post!
+  updateEvent(data: EventUpdateInput!, where: EventWhereUniqueInput!): Event!
   updatePost(data: PostUpdateInput!, where: PostWhereUniqueInput!): Post!
 }
 
@@ -106,6 +108,36 @@ enum Role {
 enum SortOrder {
   asc
   desc
+}
+
+type Ticket {
+  createdAt: DateTime!
+  event: Event!
+  holder: User!
+  id: ID!
+}
+
+input TicketCreateInput {
+  eventId: String!
+  holderId: String!
+}
+
+input TicketOrderByInput {
+  createdAt: SortOrder
+}
+
+input TicketUpdateInput {
+  eventId: String
+  holderId: String
+}
+
+input TicketWhereInput {
+  eventId: String
+  holderId: String
+}
+
+input TicketWhereUniqueInput {
+  id: String
 }
 
 type User {
