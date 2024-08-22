@@ -8,11 +8,47 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 scalar DateTime
 
 type Mutation {
+  createPost(data: PostCreateInput!): Post!
   createUser(data: UserRegisterInput!): User!
+  deletePost(where: PostWhereUniqueInput!): Post!
+  updatePost(data: PostUpdateInput!, where: PostWhereUniqueInput!): Post!
+}
+
+type Post {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  title: String!
+  updatedAt: DateTime!
+}
+
+input PostCreateInput {
+  content: String!
+  title: String!
+}
+
+input PostOrderByInput {
+  createdAt: SortOrder
+}
+
+input PostUpdateInput {
+  content: String
+  title: String
+}
+
+input PostWhereInput {
+  content: String
+  title: String
+}
+
+input PostWhereUniqueInput {
+  id: String
 }
 
 type Query {
   currentUser: User
+  post(where: PostWhereUniqueInput!): Post
+  posts(orderBy: PostOrderByInput, skip: Int, take: Int, where: PostWhereInput): [Post!]!
   users(orderBy: UserOrderByInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
 }
 

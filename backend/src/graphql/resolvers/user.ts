@@ -1,4 +1,4 @@
-import { arg, extendType, intArg, nonNull, stringArg } from "nexus";
+import { arg, extendType, intArg, nonNull } from "nexus";
 import { handlePrismaError } from "../helper/prisma";
 import { removeEmpty } from "../helper/null";
 import { Context } from "../context";
@@ -39,14 +39,10 @@ export const UserQuery = extendType({
     t.nullable.field("currentUser", {
       type: "User",
       args: {},
-      resolve: async (
-        _root: any,
-        _args: any,
-        { user, prisma }: Context,
-        _info: any
-      ) => {
+      resolve: async (_root, _args, { user, prisma }: Context, _info) => {
         try {
-          return await prisma.user.findFirst({ where: { id: user?.id! } });
+          if (!user?.id) throw new GraphQLError("User not authenticated");
+          return await prisma.user.findFirst({ where: { id: user.id } });
         } catch (error: any) {
           return handlePrismaError(error);
         }
@@ -67,20 +63,24 @@ export const UserMutation = extendType({
           })
         ),
       },
-      resolve: async (_root, args, { prisma, user }) => {
-        const { data } = removeEmpty(args);
+      resolve: async (_root, args, { prisma, user }: Context) => {
+        const { data } = removeEmpty(args) as {
+          data: {
+            email: string;
+            password: string;
+            name?: string;
+            role?: string;
+          };
+        };
 
         const auth0Id = user?.sub;
 
-        let existingUser = await prisma.user.findUnique({
-          where: { email: data.email },
+        // Check for existing user by email or auth0Id
+        let existingUser = await prisma.user.findFirst({
+          where: {
+            OR: [{ email: data.email }, { auth0Id }],
+          },
         });
-
-        if (!existingUser && auth0Id) {
-          existingUser = await prisma.user.findUnique({
-            where: { auth0Id: auth0Id },
-          });
-        }
 
         if (existingUser) {
           throw new GraphQLError("User already exists", {
@@ -96,9 +96,9 @@ export const UserMutation = extendType({
           data: {
             email: data.email,
             password: hashedPassword,
-            auth0Id: auth0Id,
+            auth0Id,
             name: data.name,
-            role: data.role || "USER",
+            // role: data.role || "USER",
           },
         });
 

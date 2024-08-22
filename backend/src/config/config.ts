@@ -2,6 +2,7 @@ import "dotenv/config";
 
 export const CONFIG = {
   PORT: process.env.PORT,
+  JKWSURI: process.env.JKWSURI
 };
 
 export const auth0Config = {

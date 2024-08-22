@@ -6,7 +6,7 @@ export const callbackRouter = Router();
 
 callbackRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const idToken = req.oidc?.idToken;
+    const idToken = req.oidc?.idToken!;
 
     const decodedToken = getJwtToken({ idToken });
 
@@ -55,7 +55,8 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
         message: "User already exists",
         user: existingUser,
       });
-      console.log(existingUser, "existingUser");
+      console.log(user, "user");
+      console.log(req.oidc.idToken, "idToken");
     } else {
       const role = req.query.role === "ADMIN" ? "ADMIN" : "USER";
 

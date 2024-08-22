@@ -29,6 +29,24 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  PostCreateInput: { // input type
+    content: string; // String!
+    title: string; // String!
+  }
+  PostOrderByInput: { // input type
+    createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
+  }
+  PostUpdateInput: { // input type
+    content?: string | null; // String
+    title?: string | null; // String
+  }
+  PostWhereInput: { // input type
+    content?: string | null; // String
+    title?: string | null; // String
+  }
+  PostWhereUniqueInput: { // input type
+    id?: string | null; // String
+  }
   UserOrderByInput: { // input type
     createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
   }
@@ -64,6 +82,13 @@ export interface NexusGenScalars {
 
 export interface NexusGenObjects {
   Mutation: {};
+  Post: { // root type
+    content: string; // String!
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    id: string; // ID!
+    title: string; // String!
+    updatedAt: NexusGenScalars['DateTime']; // DateTime!
+  }
   Query: {};
   User: { // root type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
@@ -86,10 +111,22 @@ export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnu
 
 export interface NexusGenFieldTypes {
   Mutation: { // field return type
+    createPost: NexusGenRootTypes['Post']; // Post!
     createUser: NexusGenRootTypes['User']; // User!
+    deletePost: NexusGenRootTypes['Post']; // Post!
+    updatePost: NexusGenRootTypes['Post']; // Post!
+  }
+  Post: { // field return type
+    content: string; // String!
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    id: string; // ID!
+    title: string; // String!
+    updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
   Query: { // field return type
     currentUser: NexusGenRootTypes['User'] | null; // User
+    post: NexusGenRootTypes['Post'] | null; // Post
+    posts: NexusGenRootTypes['Post'][]; // [Post!]!
     users: NexusGenRootTypes['User'][]; // [User!]!
   }
   User: { // field return type
@@ -103,10 +140,22 @@ export interface NexusGenFieldTypes {
 
 export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
+    createPost: 'Post'
     createUser: 'User'
+    deletePost: 'Post'
+    updatePost: 'Post'
+  }
+  Post: { // field return type name
+    content: 'String'
+    createdAt: 'DateTime'
+    id: 'ID'
+    title: 'String'
+    updatedAt: 'DateTime'
   }
   Query: { // field return type name
     currentUser: 'User'
+    post: 'Post'
+    posts: 'Post'
     users: 'User'
   }
   User: { // field return type name
@@ -120,11 +169,30 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
+    createPost: { // args
+      data: NexusGenInputs['PostCreateInput']; // PostCreateInput!
+    }
     createUser: { // args
       data: NexusGenInputs['UserRegisterInput']; // UserRegisterInput!
     }
+    deletePost: { // args
+      where: NexusGenInputs['PostWhereUniqueInput']; // PostWhereUniqueInput!
+    }
+    updatePost: { // args
+      data: NexusGenInputs['PostUpdateInput']; // PostUpdateInput!
+      where: NexusGenInputs['PostWhereUniqueInput']; // PostWhereUniqueInput!
+    }
   }
   Query: {
+    post: { // args
+      where: NexusGenInputs['PostWhereUniqueInput']; // PostWhereUniqueInput!
+    }
+    posts: { // args
+      orderBy?: NexusGenInputs['PostOrderByInput'] | null; // PostOrderByInput
+      skip?: number | null; // Int
+      take?: number | null; // Int
+      where?: NexusGenInputs['PostWhereInput'] | null; // PostWhereInput
+    }
     users: { // args
       orderBy?: NexusGenInputs['UserOrderByInput'] | null; // UserOrderByInput
       skip?: number | null; // Int

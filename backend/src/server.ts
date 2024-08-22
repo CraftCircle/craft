@@ -5,9 +5,8 @@ import { PrismaClient } from "@prisma/client";
 import { app, httpServer } from "./app";
 import { schema } from "./graphql/schema";
 import { checkEnv } from "./check-env";
+import { getUser } from "./graphql/helper/auth";
 import { Context } from "./graphql/context";
-import { conText } from "./graphql/helper/context";
-
 
 const Main = async () => {
   checkEnv();
@@ -24,7 +23,15 @@ const Main = async () => {
   app.use(
     "/graphql",
     expressMiddleware(server, {
-      context: conText,
+      context: async ({ req, res }) => {
+        const user = await getUser(req);
+        return {
+          req,
+          prisma,
+          res,
+          user,
+        };
+      },
     })
   );
 

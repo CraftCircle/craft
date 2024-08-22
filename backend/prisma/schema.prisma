@@ -14,13 +14,14 @@ datasource db {
 //User Model
 model User {
     id        String   @id @default(uuid()) @map("_id")
-    auth0Id   String?   @unique
+    auth0Id   String?  @unique
     name      String?
     email     String   @unique
     password  String?
     role      Role     @default(USER)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    Post      Post[]
 }
 
 enum Role {
@@ -28,5 +29,12 @@ enum Role {
     ADMIN
 }
 
-
-
+model Post {
+    id        String   @id @default(uuid()) @map("_id")
+    title     String
+    content   String
+    author    User     @relation(fields: [authorId], references: [id])
+    authorId  String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

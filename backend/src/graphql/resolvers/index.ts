@@ -1,9 +1,12 @@
 import { UserQuery, UserMutation } from "./user";
+import { PostMutation, PostQuery} from './post'
 
 export const $Query = {
-    UserQuery
+    UserQuery,
+    PostQuery
 };
 
 export const $Mutation = {
-    UserMutation
+    UserMutation,
+    PostMutation
 };
