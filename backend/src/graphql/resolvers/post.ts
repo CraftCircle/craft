@@ -1,4 +1,4 @@
-import { arg, extendType, nonNull } from "nexus";
+import { arg, extendType, intArg, nonNull } from "nexus";
 import { handlePrismaError } from "../helper/prisma";
 import { removeEmpty } from "../helper/null";
 import { Context } from "../context";
@@ -13,12 +13,8 @@ export const PostQuery = extendType({
         where: arg({
           type: "PostWhereInput",
         }),
-        take: arg({
-          type: "Int",
-        }),
-        skip: arg({
-          type: "Int",
-        }),
+        take: intArg(),
+        skip: intArg(),
         orderBy: arg({
           type: "PostOrderByInput",
         }),

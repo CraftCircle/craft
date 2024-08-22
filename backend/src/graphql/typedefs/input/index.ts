@@ -14,6 +14,15 @@ import {
   PostOrderByInput,
 } from "./post";
 
+import {
+  EventWhereUniqueInput,
+  EventCreateInput,
+  EventUpdateInput,
+  EventWhereInput,
+  EventOrderByInput,
+
+} from "./event";
+
 export const $Input = {
   UserWhereUniqueInput,
   UserRegisterInput,
@@ -24,4 +33,9 @@ export const $Input = {
   PostUpdateInput,
   PostWhereInput,
   PostOrderByInput,
+  EventWhereUniqueInput,
+  EventCreateInput,
+  EventUpdateInput,
+  EventWhereInput,
+  EventOrderByInput,
 };

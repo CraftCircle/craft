@@ -29,6 +29,33 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  EventCreateInput: { // input type
+    amount: number; // Float!
+    description: string; // String!
+    eventDate: NexusGenScalars['DateTime']; // DateTime!
+    location: string; // String!
+    name: string; // String!
+  }
+  EventOrderByInput: { // input type
+    createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
+  }
+  EventUpdateInput: { // input type
+    amount?: number | null; // Float
+    description?: string | null; // String
+    eventDate?: NexusGenScalars['DateTime'] | null; // DateTime
+    location?: string | null; // String
+    name?: string | null; // String
+  }
+  EventWhereInput: { // input type
+    amount?: number | null; // Float
+    description?: string | null; // String
+    eventDate?: NexusGenScalars['DateTime'] | null; // DateTime
+    location?: string | null; // String
+    name?: string | null; // String
+  }
+  EventWhereUniqueInput: { // input type
+    id?: string | null; // String
+  }
   PostCreateInput: { // input type
     content: string; // String!
     title: string; // String!
@@ -81,6 +108,16 @@ export interface NexusGenScalars {
 }
 
 export interface NexusGenObjects {
+  Event: { // root type
+    amount: number; // Float!
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    description: string; // String!
+    eventDate: NexusGenScalars['DateTime']; // DateTime!
+    id: string; // ID!
+    location: string; // String!
+    name: string; // String!
+    updatedAt: NexusGenScalars['DateTime']; // DateTime!
+  }
   Mutation: {};
   Post: { // root type
     content: string; // String!
@@ -110,7 +147,18 @@ export type NexusGenRootTypes = NexusGenObjects
 export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnums
 
 export interface NexusGenFieldTypes {
+  Event: { // field return type
+    amount: number; // Float!
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    description: string; // String!
+    eventDate: NexusGenScalars['DateTime']; // DateTime!
+    id: string; // ID!
+    location: string; // String!
+    name: string; // String!
+    updatedAt: NexusGenScalars['DateTime']; // DateTime!
+  }
   Mutation: { // field return type
+    createEvent: NexusGenRootTypes['Event']; // Event!
     createPost: NexusGenRootTypes['Post']; // Post!
     createUser: NexusGenRootTypes['User']; // User!
     deletePost: NexusGenRootTypes['Post']; // Post!
@@ -125,6 +173,8 @@ export interface NexusGenFieldTypes {
   }
   Query: { // field return type
     currentUser: NexusGenRootTypes['User'] | null; // User
+    event: NexusGenRootTypes['Event'] | null; // Event
+    events: NexusGenRootTypes['Event'][]; // [Event!]!
     post: NexusGenRootTypes['Post'] | null; // Post
     posts: NexusGenRootTypes['Post'][]; // [Post!]!
     users: NexusGenRootTypes['User'][]; // [User!]!
@@ -139,7 +189,18 @@ export interface NexusGenFieldTypes {
 }
 
 export interface NexusGenFieldTypeNames {
+  Event: { // field return type name
+    amount: 'Float'
+    createdAt: 'DateTime'
+    description: 'String'
+    eventDate: 'DateTime'
+    id: 'ID'
+    location: 'String'
+    name: 'String'
+    updatedAt: 'DateTime'
+  }
   Mutation: { // field return type name
+    createEvent: 'Event'
     createPost: 'Post'
     createUser: 'User'
     deletePost: 'Post'
@@ -154,6 +215,8 @@ export interface NexusGenFieldTypeNames {
   }
   Query: { // field return type name
     currentUser: 'User'
+    event: 'Event'
+    events: 'Event'
     post: 'Post'
     posts: 'Post'
     users: 'User'
@@ -169,6 +232,9 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
+    createEvent: { // args
+      data: NexusGenInputs['EventCreateInput']; // EventCreateInput!
+    }
     createPost: { // args
       data: NexusGenInputs['PostCreateInput']; // PostCreateInput!
     }
@@ -184,6 +250,15 @@ export interface NexusGenArgTypes {
     }
   }
   Query: {
+    event: { // args
+      where: NexusGenInputs['EventWhereUniqueInput']; // EventWhereUniqueInput!
+    }
+    events: { // args
+      orderBy?: NexusGenInputs['EventOrderByInput'] | null; // EventOrderByInput
+      skip?: number | null; // Int
+      take?: number | null; // Int
+      where?: NexusGenInputs['EventWhereInput'] | null; // EventWhereInput
+    }
     post: { // args
       where: NexusGenInputs['PostWhereUniqueInput']; // PostWhereUniqueInput!
     }

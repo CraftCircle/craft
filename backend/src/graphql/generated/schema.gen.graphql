@@ -7,7 +7,51 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+type Event {
+  amount: Float!
+  createdAt: DateTime!
+  description: String!
+  eventDate: DateTime!
+  id: ID!
+  location: String!
+  name: String!
+  updatedAt: DateTime!
+}
+
+input EventCreateInput {
+  amount: Float!
+  description: String!
+  eventDate: DateTime!
+  location: String!
+  name: String!
+}
+
+input EventOrderByInput {
+  createdAt: SortOrder
+}
+
+input EventUpdateInput {
+  amount: Float
+  description: String
+  eventDate: DateTime
+  location: String
+  name: String
+}
+
+input EventWhereInput {
+  amount: Float
+  description: String
+  eventDate: DateTime
+  location: String
+  name: String
+}
+
+input EventWhereUniqueInput {
+  id: String
+}
+
 type Mutation {
+  createEvent(data: EventCreateInput!): Event!
   createPost(data: PostCreateInput!): Post!
   createUser(data: UserRegisterInput!): User!
   deletePost(where: PostWhereUniqueInput!): Post!
@@ -47,6 +91,8 @@ input PostWhereUniqueInput {
 
 type Query {
   currentUser: User
+  event(where: EventWhereUniqueInput!): Event
+  events(orderBy: EventOrderByInput, skip: Int, take: Int, where: EventWhereInput): [Event!]!
   post(where: PostWhereUniqueInput!): Post
   posts(orderBy: PostOrderByInput, skip: Int, take: Int, where: PostWhereInput): [Post!]!
   users(orderBy: UserOrderByInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
