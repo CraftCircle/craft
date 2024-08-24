@@ -50,9 +50,21 @@ input EventWhereUniqueInput {
   id: String
 }
 
+enum MessageStatus {
+  FAILED
+  PENDING
+  SENT
+}
+
+enum MessageType {
+  EMAIL
+  SMS
+}
+
 type Mutation {
   createEvent(data: EventCreateInput!): Event!
   createPost(data: PostCreateInput!): Post!
+  createTicket(data: TicketCreateInput!): Ticket!
   createUser(data: UserRegisterInput!): User!
   deleteEvent(where: EventWhereUniqueInput!): Event!
   deletePost(where: PostWhereUniqueInput!): Post!
@@ -61,16 +73,22 @@ type Mutation {
 }
 
 type Post {
+  audios: [String]
   content: String!
   createdAt: DateTime!
   id: ID!
+  images: [String]
   title: String!
   updatedAt: DateTime!
+  videos: [String]
 }
 
 input PostCreateInput {
+  audio: [String]
   content: String!
+  image: [String]
   title: String!
+  video: [String]
 }
 
 input PostOrderByInput {
@@ -78,8 +96,11 @@ input PostOrderByInput {
 }
 
 input PostUpdateInput {
+  audio: [String]
   content: String
+  image: [String]
   title: String
+  video: [String]
 }
 
 input PostWhereInput {
@@ -97,6 +118,7 @@ type Query {
   events(orderBy: EventOrderByInput, skip: Int, take: Int, where: EventWhereInput): [Event!]!
   post(where: PostWhereUniqueInput!): Post
   posts(orderBy: PostOrderByInput, skip: Int, take: Int, where: PostWhereInput): [Post!]!
+  tickets(orderBy: TicketOrderByInput, skip: Int, take: Int, where: TicketWhereInput): [Ticket!]!
   users(orderBy: UserOrderByInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
 }
 
@@ -113,13 +135,12 @@ enum SortOrder {
 type Ticket {
   createdAt: DateTime!
   event: Event!
-  holder: User!
+  holder: User
   id: ID!
 }
 
 input TicketCreateInput {
   eventId: String!
-  holderId: String!
 }
 
 input TicketOrderByInput {
@@ -144,7 +165,6 @@ type User {
   createdAt: DateTime!
   email: String!
   id: ID!
-  password: String
   updatedAt: DateTime!
 }
 

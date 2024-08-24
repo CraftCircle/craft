@@ -37,6 +37,9 @@ model Post {
     content   String
     author    User     @relation(fields: [authorId], references: [id])
     authorId  String
+    image     String[]
+    video     String[]
+    audio     String[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -62,4 +65,26 @@ model Ticket {
     holder    User?    @relation(fields: [holderId], references: [id])
     holderId  String?
     createdAt DateTime @default(now())
+}
+
+model ScheduledMessage {
+  id          String   @id @default(uuid()) @map("_id")
+  subject     String?
+  content     String
+  type        MessageType
+  recipients  String[] 
+  sendTime    DateTime
+  createdAt   DateTime @default(now())
+  status      MessageStatus @default(PENDING)
+}
+
+enum MessageType {
+  EMAIL
+  SMS
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  FAILED
 }

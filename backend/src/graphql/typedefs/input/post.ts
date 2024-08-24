@@ -12,7 +12,6 @@ export const PostWhereUniqueInput = inputObjectType({
     name: "PostWhereUniqueInput",
     definition(t) {
         t.string("id");
-        // t.string("title");
     },
 });
 
@@ -21,7 +20,9 @@ export const PostCreateInput = inputObjectType({
     definition(t) {
         t.nonNull.string("title");
         t.nonNull.string("content");
-        // t.field("author", { type: "Role" });
+        t.list.string("image")
+        t.list.string("video")
+        t.list.string("audio")
     },
 });
 
@@ -30,6 +31,9 @@ export const PostUpdateInput = inputObjectType({
     definition(t) {
         t.string("title");
         t.string("content");
+        t.list.string("image")
+        t.list.string("video")
+        t.list.string("audio")
     },
 });
 

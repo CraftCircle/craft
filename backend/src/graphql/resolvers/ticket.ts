@@ -1,6 +1,7 @@
 import { arg, extendType, intArg, nonNull } from "nexus";
 import { GraphQLError } from "graphql";
 import { Context } from "../context";
+import { removeEmpty } from "../helper/null";
 
 export const TicketQuery = extendType({
   type: "Query",
@@ -14,7 +15,7 @@ export const TicketQuery = extendType({
         skip: intArg(),
       },
       resolve: async (_root, args, { prisma }) => {
-        const { where, orderBy, take, skip } = args;
+        const { where, orderBy, take, skip } = removeEmpty(args);
 
         return await prisma.ticket.findMany({
           where,

@@ -9,7 +9,19 @@ export const SortOrder = enumType({
   members: ["asc", "desc"],
   });
 
+  export const MessageType = enumType({
+    name: "MessageType",
+    members: ["EMAIL", "SMS"],
+  });
+
+  export const MessageStatus = enumType({
+    name: "MessageStatus",
+    members: ["PENDING", "SENT", "FAILED"],
+  });
+
 export const $Enum = {
   Role,
-  SortOrder
+  SortOrder,
+  MessageStatus,
+  MessageType
 }

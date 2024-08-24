@@ -1,7 +1,6 @@
 import { objectType } from "nexus";
 import * as NexusPrisma from "nexus-prisma";
 
-
 export const Post = objectType({
   name: NexusPrisma.Post.$name,
   description: NexusPrisma.Post.$description,
@@ -9,6 +8,9 @@ export const Post = objectType({
     t.field(NexusPrisma.Post.id);
     t.field(NexusPrisma.Post.title);
     t.field(NexusPrisma.Post.content);
+    t.list.string("images");
+    t.list.string("videos");
+    t.list.string("audios");
     t.field(NexusPrisma.Post.createdAt);
     t.field(NexusPrisma.Post.updatedAt);
   },

@@ -57,15 +57,21 @@ export interface NexusGenInputs {
     id?: string | null; // String
   }
   PostCreateInput: { // input type
+    audio?: Array<string | null> | null; // [String]
     content: string; // String!
+    image?: Array<string | null> | null; // [String]
     title: string; // String!
+    video?: Array<string | null> | null; // [String]
   }
   PostOrderByInput: { // input type
     createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
   }
   PostUpdateInput: { // input type
+    audio?: Array<string | null> | null; // [String]
     content?: string | null; // String
+    image?: Array<string | null> | null; // [String]
     title?: string | null; // String
+    video?: Array<string | null> | null; // [String]
   }
   PostWhereInput: { // input type
     content?: string | null; // String
@@ -76,7 +82,6 @@ export interface NexusGenInputs {
   }
   TicketCreateInput: { // input type
     eventId: string; // String!
-    holderId: string; // String!
   }
   TicketOrderByInput: { // input type
     createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
@@ -112,6 +117,8 @@ export interface NexusGenInputs {
 }
 
 export interface NexusGenEnums {
+  MessageStatus: "FAILED" | "PENDING" | "SENT"
+  MessageType: "EMAIL" | "SMS"
   Role: "ADMIN" | "USER"
   SortOrder: "asc" | "desc"
 }
@@ -138,11 +145,14 @@ export interface NexusGenObjects {
   }
   Mutation: {};
   Post: { // root type
+    audios?: Array<string | null> | null; // [String]
     content: string; // String!
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     id: string; // ID!
+    images?: Array<string | null> | null; // [String]
     title: string; // String!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
+    videos?: Array<string | null> | null; // [String]
   }
   Query: {};
   Ticket: { // root type
@@ -153,7 +163,6 @@ export interface NexusGenObjects {
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
     id: string; // ID!
-    password?: string | null; // String
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
 }
@@ -182,6 +191,7 @@ export interface NexusGenFieldTypes {
   Mutation: { // field return type
     createEvent: NexusGenRootTypes['Event']; // Event!
     createPost: NexusGenRootTypes['Post']; // Post!
+    createTicket: NexusGenRootTypes['Ticket']; // Ticket!
     createUser: NexusGenRootTypes['User']; // User!
     deleteEvent: NexusGenRootTypes['Event']; // Event!
     deletePost: NexusGenRootTypes['Post']; // Post!
@@ -189,11 +199,14 @@ export interface NexusGenFieldTypes {
     updatePost: NexusGenRootTypes['Post']; // Post!
   }
   Post: { // field return type
+    audios: Array<string | null> | null; // [String]
     content: string; // String!
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     id: string; // ID!
+    images: Array<string | null> | null; // [String]
     title: string; // String!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
+    videos: Array<string | null> | null; // [String]
   }
   Query: { // field return type
     currentUser: NexusGenRootTypes['User'] | null; // User
@@ -201,19 +214,19 @@ export interface NexusGenFieldTypes {
     events: NexusGenRootTypes['Event'][]; // [Event!]!
     post: NexusGenRootTypes['Post'] | null; // Post
     posts: NexusGenRootTypes['Post'][]; // [Post!]!
+    tickets: NexusGenRootTypes['Ticket'][]; // [Ticket!]!
     users: NexusGenRootTypes['User'][]; // [User!]!
   }
   Ticket: { // field return type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     event: NexusGenRootTypes['Event']; // Event!
-    holder: NexusGenRootTypes['User']; // User!
+    holder: NexusGenRootTypes['User'] | null; // User
     id: string; // ID!
   }
   User: { // field return type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
     id: string; // ID!
-    password: string | null; // String
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
 }
@@ -232,6 +245,7 @@ export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
     createEvent: 'Event'
     createPost: 'Post'
+    createTicket: 'Ticket'
     createUser: 'User'
     deleteEvent: 'Event'
     deletePost: 'Post'
@@ -239,11 +253,14 @@ export interface NexusGenFieldTypeNames {
     updatePost: 'Post'
   }
   Post: { // field return type name
+    audios: 'String'
     content: 'String'
     createdAt: 'DateTime'
     id: 'ID'
+    images: 'String'
     title: 'String'
     updatedAt: 'DateTime'
+    videos: 'String'
   }
   Query: { // field return type name
     currentUser: 'User'
@@ -251,6 +268,7 @@ export interface NexusGenFieldTypeNames {
     events: 'Event'
     post: 'Post'
     posts: 'Post'
+    tickets: 'Ticket'
     users: 'User'
   }
   Ticket: { // field return type name
@@ -263,7 +281,6 @@ export interface NexusGenFieldTypeNames {
     createdAt: 'DateTime'
     email: 'String'
     id: 'ID'
-    password: 'String'
     updatedAt: 'DateTime'
   }
 }
@@ -275,6 +292,9 @@ export interface NexusGenArgTypes {
     }
     createPost: { // args
       data: NexusGenInputs['PostCreateInput']; // PostCreateInput!
+    }
+    createTicket: { // args
+      data: NexusGenInputs['TicketCreateInput']; // TicketCreateInput!
     }
     createUser: { // args
       data: NexusGenInputs['UserRegisterInput']; // UserRegisterInput!
@@ -312,6 +332,12 @@ export interface NexusGenArgTypes {
       skip?: number | null; // Int
       take?: number | null; // Int
       where?: NexusGenInputs['PostWhereInput'] | null; // PostWhereInput
+    }
+    tickets: { // args
+      orderBy?: NexusGenInputs['TicketOrderByInput'] | null; // TicketOrderByInput
+      skip?: number | null; // Int
+      take?: number | null; // Int
+      where?: NexusGenInputs['TicketWhereInput'] | null; // TicketWhereInput
     }
     users: { // args
       orderBy?: NexusGenInputs['UserOrderByInput'] | null; // UserOrderByInput
