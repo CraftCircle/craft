@@ -3,6 +3,7 @@ import { handlePrismaError } from "../helper/prisma";
 import { removeEmpty } from "../helper/null";
 import { Context } from "../context";
 import { GraphQLError } from "graphql";
+import cloudinary from "../../config/cloudinary";
 
 export const PostQuery = extendType({
   type: "Query",
@@ -29,7 +30,7 @@ export const PostQuery = extendType({
             orderBy,
             include: {
               author: true,
-            }
+            },
           });
         } catch (error: any) {
           return handlePrismaError(error);
@@ -53,7 +54,7 @@ export const PostQuery = extendType({
             where,
             include: {
               author: true,
-            }
+            },
           });
         } catch (error: any) {
           return handlePrismaError(error);
@@ -87,9 +88,8 @@ export const PostMutation = extendType({
           );
         }
 
-
         const currentUser = await prisma.user.findUnique({
-          where: { email: user.email }, 
+          where: { email: user.email },
         });
 
         if (!currentUser) {
@@ -108,11 +108,64 @@ export const PostMutation = extendType({
           });
         }
 
+        const { title, content, image, video, audio } = args.data;
+
+        // Upload media to Cloudinary
+        let uploadedImages: string[] = [];
+        let uploadedVideos: string[] = [];
+        let uploadedAudios: string[] = [];
+
+        if (image) {
+          const filteredImages = image.filter(
+            (img): img is string => img !== null
+          );
+          uploadedImages = await Promise.all(
+            filteredImages.map(async (img) => {
+              const uploadResult = await cloudinary.uploader.upload(img, {
+                resource_type: "image",
+              });
+              return uploadResult.secure_url;
+            })
+          );
+        }
+
+        if (video) {
+          const filteredVideos = video.filter(
+            (vid): vid is string => vid !== null
+          );
+          uploadedVideos = await Promise.all(
+            filteredVideos.map(async (vid) => {
+              const uploadResult = await cloudinary.uploader.upload(vid, {
+                resource_type: "video",
+              });
+              return uploadResult.secure_url;
+            })
+          );
+        }
+
+        if (audio) {
+          const filteredAudios = audio.filter(
+            (aud): aud is string => aud !== null
+          );
+          uploadedAudios = await Promise.all(
+            filteredAudios.map(async (aud) => {
+              const uploadResult = await cloudinary.uploader.upload(aud, {
+                resource_type: "video", 
+              });
+              return uploadResult.secure_url;
+            })
+          );
+        }
+
         try {
           return await prisma.post.create({
             data: {
-              ...args.data,
-              authorId: currentUser.id, 
+              title,
+              content,
+              authorId: currentUser.id,
+              image: uploadedImages,
+              video: uploadedVideos,
+              audio: uploadedAudios,
             },
           });
         } catch (error: any) {
@@ -148,7 +201,7 @@ export const PostMutation = extendType({
         }
 
         const currentUser = await prisma.user.findUnique({
-          where: { email: user.email }, 
+          where: { email: user.email },
         });
 
         if (!currentUser) {

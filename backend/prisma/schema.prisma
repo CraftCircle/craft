@@ -88,3 +88,8 @@ enum MessageStatus {
   SENT
   FAILED
 }
+
+
+generator seed {
+    provider = "prisma seed"
+}

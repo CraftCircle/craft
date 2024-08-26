@@ -16,7 +16,6 @@ export async function sendEmail(
     },
   });
 
-  // Send the email
   const info = await transporter.sendMail({
     from: `"Your App Name" <${process.env.SMTP_USER}>`, 
     to: recipients.join(","),
