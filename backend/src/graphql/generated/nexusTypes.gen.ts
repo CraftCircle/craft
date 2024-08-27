@@ -188,6 +188,7 @@ export interface NexusGenFieldTypes {
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
   Mutation: { // field return type
+    assignRole: NexusGenRootTypes['User'] | null; // User
     createEvent: NexusGenRootTypes['Event']; // Event!
     createPost: NexusGenRootTypes['Post']; // Post!
     createTicket: NexusGenRootTypes['Ticket']; // Ticket!
@@ -242,6 +243,7 @@ export interface NexusGenFieldTypeNames {
     updatedAt: 'DateTime'
   }
   Mutation: { // field return type name
+    assignRole: 'User'
     createEvent: 'Event'
     createPost: 'Post'
     createTicket: 'Ticket'
@@ -286,6 +288,10 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
+    assignRole: { // args
+      role: NexusGenEnums['Role']; // Role!
+      userId: string; // String!
+    }
     createEvent: { // args
       data: NexusGenInputs['EventCreateInput']; // EventCreateInput!
     }

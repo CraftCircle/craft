@@ -34,7 +34,9 @@ export function getJwtToken({ idToken }: { idToken: string }) {
   });
 }
 
-export const getUser = async (req: IncomingMessage) => {
+export const getUser = async (
+  req: IncomingMessage,
+): Promise<IJwtPayload | undefined> => {
   const authorization = req.headers.authorization || "";
 
   try {
@@ -44,7 +46,6 @@ export const getUser = async (req: IncomingMessage) => {
 
     const token = authorization.replace("Bearer ", "");
     const user = (await getJwtToken({ idToken: token })) as IJwtPayload;
-
 
     return user;
   } catch (error: any) {

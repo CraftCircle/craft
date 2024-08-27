@@ -6,7 +6,7 @@ export const EventCreateInput = inputObjectType({
     t.nonNull.string("name");
     t.nonNull.string("description");
     t.nonNull.float("amount");
-    t.nonNull.dateTime("eventDate");
+    t.nonNull.field("eventDate", { type: "DateTime" }); 
     t.nonNull.string("location");
   },
 });
@@ -17,15 +17,8 @@ export const EventUpdateInput = inputObjectType({
     t.string("name");
     t.string("description");
     t.float("amount");
-    t.dateTime("eventDate");
+    t.field("eventDate", { type: "DateTime" }); 
     t.string("location");
-  },
-});
-
-export const EventWhereUniqueInput = inputObjectType({
-  name: "EventWhereUniqueInput",
-  definition(t) {
-    t.string("id");
   },
 });
 
@@ -35,8 +28,15 @@ export const EventWhereInput = inputObjectType({
     t.string("name");
     t.string("description");
     t.float("amount");
-    t.dateTime("eventDate");
+    t.field("eventDate", { type: "DateTime" }); 
     t.string("location");
+  },
+});
+
+export const EventWhereUniqueInput = inputObjectType({
+  name: "EventWhereUniqueInput",
+  definition(t) {
+    t.string("id");
   },
 });
 

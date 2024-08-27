@@ -117,10 +117,10 @@ export const PostMutation = extendType({
 
         if (image) {
           const filteredImages = image.filter(
-            (img): img is string => img !== null
+            (img: string | null): img is string => img !== null
           );
           uploadedImages = await Promise.all(
-            filteredImages.map(async (img) => {
+            filteredImages.map(async (img: string) => {
               const uploadResult = await cloudinary.uploader.upload(img, {
                 resource_type: "image",
               });
@@ -131,10 +131,10 @@ export const PostMutation = extendType({
 
         if (video) {
           const filteredVideos = video.filter(
-            (vid): vid is string => vid !== null
+            (vid: string | null): vid is string => vid !== null
           );
           uploadedVideos = await Promise.all(
-            filteredVideos.map(async (vid) => {
+            filteredVideos.map(async (vid: string) => {
               const uploadResult = await cloudinary.uploader.upload(vid, {
                 resource_type: "video",
               });
@@ -145,12 +145,12 @@ export const PostMutation = extendType({
 
         if (audio) {
           const filteredAudios = audio.filter(
-            (aud): aud is string => aud !== null
+            (aud: string | null): aud is string => aud !== null
           );
           uploadedAudios = await Promise.all(
-            filteredAudios.map(async (aud) => {
+            filteredAudios.map(async (aud: string) => {
               const uploadResult = await cloudinary.uploader.upload(aud, {
-                resource_type: "video", 
+                resource_type: "video",
               });
               return uploadResult.secure_url;
             })

@@ -62,6 +62,7 @@ enum MessageType {
 }
 
 type Mutation {
+  assignRole(role: Role!, userId: String!): User
   createEvent(data: EventCreateInput!): Event!
   createPost(data: PostCreateInput!): Post!
   createTicket(data: TicketCreateInput!): Ticket!

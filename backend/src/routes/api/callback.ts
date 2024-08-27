@@ -1,15 +1,18 @@
 import { Request, Response, Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { getJwtToken } from "../../graphql/helper/auth";
+import jwt from "jsonwebtoken";
 
 export const callbackRouter = Router();
 
 callbackRouter.get("/", async (req: Request, res: Response) => {
   try {
     const idToken = req.oidc?.idToken!;
+    const roleFromQuery = req.query.role;
+    console.log(roleFromQuery, "====reeeqqqss=====");
+    
 
-    const decodedToken = getJwtToken({ idToken });
-
+    const decodedToken = (await getJwtToken({ idToken })) as jwt.JwtPayload;
     if (!decodedToken) {
       return res
         .status(401)
@@ -58,7 +61,7 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
       console.log(user, "user");
       console.log(req.oidc.idToken, "idToken");
     } else {
-      const role = req.query.role === "ADMIN" ? "ADMIN" : "USER";
+      const role = roleFromQuery === "ADMIN" ? "ADMIN" : "USER";
 
       const newUser = await prisma.user.create({
         data: {
@@ -69,10 +72,30 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
         },
       });
 
+      const updatedToken = jwt.sign(
+        {
+          ...decodedToken,
+          role: role,
+        },
+        process.env.SECRET_KEY!,
+        {
+          algorithm: "RS256",
+          expiresIn: "1h",
+          header: {
+            kid: decodedToken.header.kid,
+            alg: "RS256",
+          },
+        }
+      );
+
       res.status(201).json({
         message: "User created successfully",
         user: newUser,
+        token: updatedToken,
       });
+
+      console.log("token", updatedToken);
+      
     }
   } catch (error) {
     console.error(error);
