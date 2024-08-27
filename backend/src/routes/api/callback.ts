@@ -25,9 +25,9 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
       });
     }
 
-    const auth0Id = user?.sub;
+    const userId = user?.sub;
 
-    if (!auth0Id && !user.email) {
+    if (!userId && !user.email) {
       return res.status(400).json({
         error: "Bad Request",
         message: "Missing required user identifiers",
@@ -38,7 +38,7 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
 
     let existingUser = await prisma.user.findUnique({
       where: {
-        auth0Id: auth0Id,
+        id: userId,
       },
     });
 
@@ -62,7 +62,7 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
 
       const newUser = await prisma.user.create({
         data: {
-          auth0Id: user.sub,
+          id: user.sub,
           email: user.email,
           name: user.name,
           role: role,

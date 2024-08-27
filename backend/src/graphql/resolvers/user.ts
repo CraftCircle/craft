@@ -73,11 +73,11 @@ export const UserMutation = extendType({
           };
         };
 
-        const auth0Id = user?.sub;
+        const userId = user?.sub;
 
         let existingUser = await prisma.user.findFirst({
           where: {
-            OR: [{ email: data.email }, { auth0Id }],
+            OR: [{ email: data.email }, { id: userId }],
           },
         });
 
@@ -93,9 +93,9 @@ export const UserMutation = extendType({
 
         const newUser = await prisma.user.create({
           data: {
+            id: userId,
             email: data.email,
             password: hashedPassword,
-            auth0Id,
             name: data.name,
           },
         });

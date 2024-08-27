@@ -184,7 +184,6 @@ input UserWhereInput {
 }
 
 input UserWhereUniqueInput {
-  auth0Id: String
   email: String
   id: String
 }

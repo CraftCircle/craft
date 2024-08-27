@@ -110,7 +110,6 @@ export interface NexusGenInputs {
     email?: string | null; // String
   }
   UserWhereUniqueInput: { // input type
-    auth0Id?: string | null; // String
     email?: string | null; // String
     id?: string | null; // String
   }
