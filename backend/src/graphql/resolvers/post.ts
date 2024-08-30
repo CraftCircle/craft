@@ -3,7 +3,8 @@ import { handlePrismaError } from "../helper/prisma";
 import { removeEmpty } from "../helper/null";
 import { Context } from "../context";
 import { GraphQLError } from "graphql";
-import cloudinary from "../../config/cloudinary";
+import { handleFileUpload } from "../utils/upload";
+import { Request, Response } from "express";
 
 export const PostQuery = extendType({
   type: "Query",
@@ -76,7 +77,8 @@ export const PostMutation = extendType({
           })
         ),
       },
-      resolve: async (_root, args, { prisma, user }: Context) => {
+      resolve: async (_root, args, context: Context) => {
+        const { prisma, user, req, res } = context;
         if (!user) {
           throw new GraphQLError(
             "You must be logged in to perform this action",
@@ -108,56 +110,23 @@ export const PostMutation = extendType({
           });
         }
 
-        const { title, content, image, video, audio } = args.data;
+        const { title, content } = args.data;
 
-        // Upload media to Cloudinary
-        let uploadedImages: string[] = [];
-        let uploadedVideos: string[] = [];
-        let uploadedAudios: string[] = [];
-
-        if (image) {
-          const filteredImages = image.filter(
-            (img: string | null): img is string => img !== null
-          );
-          uploadedImages = await Promise.all(
-            filteredImages.map(async (img: string) => {
-              const uploadResult = await cloudinary.uploader.upload(img, {
-                resource_type: "image",
-              });
-              return uploadResult.secure_url;
-            })
-          );
-        }
-
-        if (video) {
-          const filteredVideos = video.filter(
-            (vid: string | null): vid is string => vid !== null
-          );
-          uploadedVideos = await Promise.all(
-            filteredVideos.map(async (vid: string) => {
-              const uploadResult = await cloudinary.uploader.upload(vid, {
-                resource_type: "video",
-              });
-              return uploadResult.secure_url;
-            })
-          );
-        }
-
-        if (audio) {
-          const filteredAudios = audio.filter(
-            (aud: string | null): aud is string => aud !== null
-          );
-          uploadedAudios = await Promise.all(
-            filteredAudios.map(async (aud: string) => {
-              const uploadResult = await cloudinary.uploader.upload(aud, {
-                resource_type: "video",
-              });
-              return uploadResult.secure_url;
-            })
-          );
-        }
+        let uploadedUrls: string[] = [];
 
         try {
+          uploadedUrls = await handleFileUpload(req, res);
+
+          const uploadedImages = uploadedUrls.filter((url) =>
+            url.includes("/image/")
+          );
+          const uploadedVideos = uploadedUrls.filter((url) =>
+            url.includes("/video/")
+          );
+          const uploadedAudios = uploadedUrls.filter((url) =>
+            url.includes("/audio/")
+          );
+
           return await prisma.post.create({
             data: {
               title,
@@ -169,7 +138,12 @@ export const PostMutation = extendType({
             },
           });
         } catch (error: any) {
-          return handlePrismaError(error);
+          console.error("Error creating post: ", error);
+          throw new GraphQLError("Failed to create a post", {
+            extensions: {
+              message: "FAILED_TO_CREATE_POST",
+            },
+          });
         }
       },
     });

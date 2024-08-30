@@ -8,9 +8,6 @@ export const callbackRouter = Router();
 callbackRouter.get("/", async (req: Request, res: Response) => {
   try {
     const idToken = req.oidc?.idToken!;
-    const roleFromQuery = req.query.role;
-    console.log(roleFromQuery, "====reeeqqqss=====");
-    
 
     const decodedToken = (await getJwtToken({ idToken })) as jwt.JwtPayload;
     if (!decodedToken) {
@@ -47,9 +44,7 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
 
     if (!existingUser && user.email) {
       existingUser = await prisma.user.findUnique({
-        where: {
-          email: user.email,
-        },
+        where: { email: user.email },
       });
     }
 
@@ -60,22 +55,23 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
       });
       console.log(user, "user");
       console.log(req.oidc.idToken, "idToken");
+       
     } else {
-      const role = roleFromQuery === "ADMIN" ? "ADMIN" : "USER";
+      // const role = roleFromQuery === "ADMIN" ? "ADMIN" : "USER";
 
       const newUser = await prisma.user.create({
         data: {
           id: user.sub,
           email: user.email,
           name: user.name,
-          role: role,
+          // role: role,
         },
       });
 
       const updatedToken = jwt.sign(
         {
           ...decodedToken,
-          role: role,
+          // role: role,
         },
         process.env.SECRET_KEY!,
         {
@@ -95,7 +91,6 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
       });
 
       console.log("token", updatedToken);
-      
     }
   } catch (error) {
     console.error(error);
