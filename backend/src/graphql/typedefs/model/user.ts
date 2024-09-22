@@ -7,7 +7,9 @@ export const User = objectType({
   definition(t) {
     t.field(NexusPrisma.User.id);
     t.field(NexusPrisma.User.email);
+    t.field(NexusPrisma.User.role);
     t.field(NexusPrisma.User.createdAt);
     t.field(NexusPrisma.User.updatedAt);
   },
 });
+

@@ -2,6 +2,11 @@
 ### Do not make changes to this file directly
 
 
+type AuthPayload {
+  token: String
+  user: User
+}
+
 """
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -66,9 +71,10 @@ type Mutation {
   createEvent(data: EventCreateInput!): Event!
   createPost(data: PostCreateInput!): Post!
   createTicket(data: TicketCreateInput!): Ticket!
-  createUser(data: UserRegisterInput!): User!
   deleteEvent(where: EventWhereUniqueInput!): Event!
   deletePost(where: PostWhereUniqueInput!): Post!
+  signIn(data: UserLoginInput!): AuthPayload!
+  signUp(data: UserRegisterInput!): AuthPayload!
   updateEvent(data: EventUpdateInput!, where: EventWhereUniqueInput!): Event!
   updatePost(data: PostUpdateInput!, where: PostWhereUniqueInput!): Post!
 }
@@ -85,11 +91,11 @@ type Post {
 }
 
 input PostCreateInput {
-  audio: [String]
+  audio: [Upload]
   content: String!
-  image: [String]
+  image: [Upload]
   title: String!
-  video: [String]
+  video: [Upload]
 }
 
 input PostOrderByInput {
@@ -97,11 +103,11 @@ input PostOrderByInput {
 }
 
 input PostUpdateInput {
-  audio: [String]
+  audio: [Upload]
   content: String
-  image: [String]
+  image: [Upload]
   title: String
-  video: [String]
+  video: [Upload]
 }
 
 input PostWhereInput {
@@ -117,6 +123,7 @@ type Query {
   currentUser: User
   event(where: EventWhereUniqueInput!): Event
   events(orderBy: EventOrderByInput, skip: Int, take: Int, where: EventWhereInput): [Event!]!
+  getUserToken: String
   post(where: PostWhereUniqueInput!): Post
   posts(orderBy: PostOrderByInput, skip: Int, take: Int, where: PostWhereInput): [Post!]!
   tickets(orderBy: TicketOrderByInput, skip: Int, take: Int, where: TicketWhereInput): [Ticket!]!
@@ -162,11 +169,20 @@ input TicketWhereUniqueInput {
   id: String
 }
 
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
 type User {
   createdAt: DateTime!
   email: String!
   id: ID!
+  role: Role!
   updatedAt: DateTime!
+}
+
+input UserLoginInput {
+  email: String!
+  password: String!
 }
 
 input UserOrderByInput {

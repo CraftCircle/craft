@@ -3,6 +3,8 @@ import {
   UserRegisterInput,
   UserWhereInput,
   UserOrderByInput,
+  UserLoginInput,
+  AuthPayload,
 
 } from "./user";
 
@@ -36,6 +38,8 @@ export const $Input = {
   UserRegisterInput,
   UserWhereInput,
   UserOrderByInput,
+  UserLoginInput,
+  AuthPayload,
   PostWhereUniqueInput,
   PostCreateInput,
   PostUpdateInput,

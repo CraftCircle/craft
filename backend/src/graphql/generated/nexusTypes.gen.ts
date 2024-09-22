@@ -57,21 +57,21 @@ export interface NexusGenInputs {
     id?: string | null; // String
   }
   PostCreateInput: { // input type
-    audio?: Array<string | null> | null; // [String]
+    audio?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
     content: string; // String!
-    image?: Array<string | null> | null; // [String]
+    image?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
     title: string; // String!
-    video?: Array<string | null> | null; // [String]
+    video?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
   }
   PostOrderByInput: { // input type
     createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
   }
   PostUpdateInput: { // input type
-    audio?: Array<string | null> | null; // [String]
+    audio?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
     content?: string | null; // String
-    image?: Array<string | null> | null; // [String]
+    image?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
     title?: string | null; // String
-    video?: Array<string | null> | null; // [String]
+    video?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
   }
   PostWhereInput: { // input type
     content?: string | null; // String
@@ -96,6 +96,10 @@ export interface NexusGenInputs {
   }
   TicketWhereUniqueInput: { // input type
     id?: string | null; // String
+  }
+  UserLoginInput: { // input type
+    email: string; // String!
+    password: string; // String!
   }
   UserOrderByInput: { // input type
     createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
@@ -129,9 +133,14 @@ export interface NexusGenScalars {
   Boolean: boolean
   ID: string
   DateTime: any
+  Upload: any
 }
 
 export interface NexusGenObjects {
+  AuthPayload: { // root type
+    token?: string | null; // String
+    user?: NexusGenRootTypes['User'] | null; // User
+  }
   Event: { // root type
     amount: number; // Float!
     createdAt: NexusGenScalars['DateTime']; // DateTime!
@@ -162,6 +171,7 @@ export interface NexusGenObjects {
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
     id: string; // ID!
+    role: NexusGenEnums['Role']; // Role!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
 }
@@ -177,6 +187,10 @@ export type NexusGenRootTypes = NexusGenObjects
 export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnums
 
 export interface NexusGenFieldTypes {
+  AuthPayload: { // field return type
+    token: string | null; // String
+    user: NexusGenRootTypes['User'] | null; // User
+  }
   Event: { // field return type
     amount: number; // Float!
     createdAt: NexusGenScalars['DateTime']; // DateTime!
@@ -192,9 +206,10 @@ export interface NexusGenFieldTypes {
     createEvent: NexusGenRootTypes['Event']; // Event!
     createPost: NexusGenRootTypes['Post']; // Post!
     createTicket: NexusGenRootTypes['Ticket']; // Ticket!
-    createUser: NexusGenRootTypes['User']; // User!
     deleteEvent: NexusGenRootTypes['Event']; // Event!
     deletePost: NexusGenRootTypes['Post']; // Post!
+    signIn: NexusGenRootTypes['AuthPayload']; // AuthPayload!
+    signUp: NexusGenRootTypes['AuthPayload']; // AuthPayload!
     updateEvent: NexusGenRootTypes['Event']; // Event!
     updatePost: NexusGenRootTypes['Post']; // Post!
   }
@@ -212,6 +227,7 @@ export interface NexusGenFieldTypes {
     currentUser: NexusGenRootTypes['User'] | null; // User
     event: NexusGenRootTypes['Event'] | null; // Event
     events: NexusGenRootTypes['Event'][]; // [Event!]!
+    getUserToken: string | null; // String
     post: NexusGenRootTypes['Post'] | null; // Post
     posts: NexusGenRootTypes['Post'][]; // [Post!]!
     tickets: NexusGenRootTypes['Ticket'][]; // [Ticket!]!
@@ -227,11 +243,16 @@ export interface NexusGenFieldTypes {
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
     id: string; // ID!
+    role: NexusGenEnums['Role']; // Role!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
 }
 
 export interface NexusGenFieldTypeNames {
+  AuthPayload: { // field return type name
+    token: 'String'
+    user: 'User'
+  }
   Event: { // field return type name
     amount: 'Float'
     createdAt: 'DateTime'
@@ -247,9 +268,10 @@ export interface NexusGenFieldTypeNames {
     createEvent: 'Event'
     createPost: 'Post'
     createTicket: 'Ticket'
-    createUser: 'User'
     deleteEvent: 'Event'
     deletePost: 'Post'
+    signIn: 'AuthPayload'
+    signUp: 'AuthPayload'
     updateEvent: 'Event'
     updatePost: 'Post'
   }
@@ -267,6 +289,7 @@ export interface NexusGenFieldTypeNames {
     currentUser: 'User'
     event: 'Event'
     events: 'Event'
+    getUserToken: 'String'
     post: 'Post'
     posts: 'Post'
     tickets: 'Ticket'
@@ -282,6 +305,7 @@ export interface NexusGenFieldTypeNames {
     createdAt: 'DateTime'
     email: 'String'
     id: 'ID'
+    role: 'Role'
     updatedAt: 'DateTime'
   }
 }
@@ -301,14 +325,17 @@ export interface NexusGenArgTypes {
     createTicket: { // args
       data: NexusGenInputs['TicketCreateInput']; // TicketCreateInput!
     }
-    createUser: { // args
-      data: NexusGenInputs['UserRegisterInput']; // UserRegisterInput!
-    }
     deleteEvent: { // args
       where: NexusGenInputs['EventWhereUniqueInput']; // EventWhereUniqueInput!
     }
     deletePost: { // args
       where: NexusGenInputs['PostWhereUniqueInput']; // PostWhereUniqueInput!
+    }
+    signIn: { // args
+      data: NexusGenInputs['UserLoginInput']; // UserLoginInput!
+    }
+    signUp: { // args
+      data: NexusGenInputs['UserRegisterInput']; // UserRegisterInput!
     }
     updateEvent: { // args
       data: NexusGenInputs['EventUpdateInput']; // EventUpdateInput!

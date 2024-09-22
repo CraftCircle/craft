@@ -7,6 +7,9 @@ import { schema } from "./graphql/schema";
 import { checkEnv } from "./check-env";
 import { getUser } from "./graphql/helper/auth";
 import { Context } from "./graphql/context";
+import { graphqlUploadExpress } from "graphql-upload-minimal";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
 
 const Main = async () => {
   checkEnv();
@@ -22,6 +25,18 @@ const Main = async () => {
 
   app.use(
     "/graphql",
+    cors({
+      origin: process.env.CORS_ORIGIN,
+      credentials: true,
+    }),
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 100,
+      message: "Too many requests, please try again later.",
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
+    graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }),
     expressMiddleware(server, {
       context: async ({ req, res }) => {
         const user = await getUser(req);

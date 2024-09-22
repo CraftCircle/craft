@@ -3,8 +3,8 @@ import { handlePrismaError } from "../helper/prisma";
 import { removeEmpty } from "../helper/null";
 import { Context } from "../context";
 import { GraphQLError } from "graphql";
-import { handleFileUpload } from "../utils/upload";
-import { Request, Response } from "express";
+import { uploadFile } from "../utils/upload";
+import { GraphQLUpload, FileUpload } from "graphql-upload-minimal";
 
 export const PostQuery = extendType({
   type: "Query",
@@ -110,33 +110,54 @@ export const PostMutation = extendType({
           });
         }
 
-        const { title, content } = args.data;
+        const { title, content, image, video, audio } = removeEmpty(
+          args.data
+        ) as {
+          title: string;
+          content: string;
+          image: FileUpload[];
+          video: FileUpload[];
+          audio: FileUpload[];
+        };
 
-        let uploadedUrls: string[] = [];
+        let uploadedVideos: { url: string; filename: string }[] = [];
+        let uploadedImages: { url: string; filename: string }[] = [];
+        let uploadedAudios: { url: string; filename: string }[] = [];
 
         try {
-          uploadedUrls = await handleFileUpload(req, res);
+          // Upload images
+          if (image && image.length > 0) {
+            uploadedImages = await Promise.all(
+              image.map(async (file) => await uploadFile(file, "image"))
+            );
+          }
+          // Upload videos
+          if (video && video.length > 0) {
+            uploadedVideos = await Promise.all(
+              video.map(async (file) => await uploadFile(file, "video"))
+            );
+          }
+          // Upload audios
+          if (audio && audio.length > 0) {
+            uploadedAudios = await Promise.all(
+              audio.map(async (file) => await uploadFile(file, "audio"))
+            );
+          }
 
-          const uploadedImages = uploadedUrls.filter((url) =>
-            url.includes("/image/")
-          );
-          const uploadedVideos = uploadedUrls.filter((url) =>
-            url.includes("/video/")
-          );
-          const uploadedAudios = uploadedUrls.filter((url) =>
-            url.includes("/audio/")
-          );
-
-          return await prisma.post.create({
+          // Create post
+          const post = await prisma.post.create({
             data: {
               title,
               content,
               authorId: currentUser.id,
-              image: uploadedImages,
-              video: uploadedVideos,
-              audio: uploadedAudios,
+              // Save the URLs and filenames to the database
+              image: uploadedImages.map(({ url }) => url),
+              video: uploadedVideos.map(({ url }) => url),
+              audio: uploadedAudios.map(({ url }) => url),
             },
           });
+
+          return post;
         } catch (error: any) {
           console.error("Error creating post: ", error);
           throw new GraphQLError("Failed to create a post", {

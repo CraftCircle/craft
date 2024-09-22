@@ -1,53 +1,46 @@
-import multer from "multer";
+import { FileUpload } from "graphql-upload-minimal";
 import cloudinary from "../../config/cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
-import { Request, Response } from "express";
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: async (req: Request, file) => {
-    return {
-      folder: "posts",
-      format: "auto",
-      public_id: `${Date.now()}-${file.originalname}`,
-      resource_type: file.mimetype.startsWith("video/") ? "video" : "image",
-    };
-  },
-});
+interface UploadResult {
+  url: string;
+  filename: string;
+}
 
-//multer setup
-const upload = multer({
-  storage: storage,
-  fileFilter: (req: Request, file, cb) => {
-    if (
-      file.mimetype.startsWith("image") ||
-      file.mimetype.startsWith("video")
-    ) {
-      cb(null, true);
-    } else {
-      cb(new Error("Not an image or video! Please upload an image or video."));
-    }
-  },
-  limits: {
-    fileSize: 1024 * 1024 * 10, //10MB
-  },
-});
+export const uploadFile = async (
+  file: FileUpload,
+  resourceType: "image" | "video" | "audio"
+): Promise<UploadResult> => {
+  const { createReadStream, filename, mimetype } = file;
 
-//function to upload files
-export const handleFileUpload = async (req: Request, res: Response) => {
-  try {
-    return await new Promise<string[]>((resolve, reject) => {
-      upload.any()(req, res, (err) => {
-        if (err) {
-          return reject(err);
-        }
-        const files = req.files as Express.Multer.File[];
-        const uploadedUrls = files.map((file) => file.path);
-        resolve(uploadedUrls);
-      });
-    });
-  } catch (error) {
-    console.error("Error uploading files: ", error);
-    throw new Error("Error uploading files");
+  const allowedTypes = {
+    image: ["image/jpeg", "image/png", "image/gif"],
+    video: ["video/mp4", "video/mpeg", "video/avi"],
+    audio: ["audio/mpeg", "audio/wav"],
+  };
+
+  if (!allowedTypes[resourceType].includes(mimetype)) {
+    throw new Error(`Unsupported file type: ${mimetype}`);
   }
+
+  const stream = createReadStream();
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { resource_type: "auto", folder: `${resourceType}s` },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary upload error:", error);
+          reject(new Error("Failed to upload file to Cloudinary"));
+        } else {
+          // Return both the URL and the filename
+          resolve({
+            url: result!.secure_url,
+            filename: result!.original_filename,
+          });
+        }
+      }
+    );
+
+    stream.pipe(uploadStream);
+  });
 };

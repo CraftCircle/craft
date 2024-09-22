@@ -5,7 +5,7 @@ import { auth } from "express-openid-connect";
 import http from "http";
 import cors from "cors";
 import cookieSession from "cookie-session";
-import { auth0Config, CONFIG } from "./config";
+import { auth0Config } from "./config";
 import { callbackRouter } from "./routes/api/callback";
 import { auth0Router } from "./routes/api/auth0";
 
@@ -14,14 +14,17 @@ export const httpServer = http.createServer(app);
 
 app.use(auth(auth0Config));
 
-app.use(cookieparser());
+// app.use(cookieparser());
 app.use(express.urlencoded({ extended: true }));
 
-app.set("trust proxy", true);
+
+
+app.set("trust proxy", false);
 app.use(cors<cors.CorsRequest>());
 app.use(
   express.json({
     limit: "50mb",
+    type: "application/json",
   })
 );
 
