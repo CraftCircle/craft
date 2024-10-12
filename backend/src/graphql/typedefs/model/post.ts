@@ -8,9 +8,11 @@ export const Post = objectType({
     t.field(NexusPrisma.Post.id);
     t.field(NexusPrisma.Post.title);
     t.field(NexusPrisma.Post.content);
-    t.list.string("images");
-    t.list.string("videos");
-    t.list.string("audios");
+    t.field(NexusPrisma.Post.author);
+    t.field(NexusPrisma.Post.authorId);
+    t.field(NexusPrisma.Post.image);
+    t.field(NexusPrisma.Post.video);
+    t.field(NexusPrisma.Post.audio);
     t.field(NexusPrisma.Post.createdAt);
     t.field(NexusPrisma.Post.updatedAt);
   },

@@ -15,6 +15,7 @@ const Main = async () => {
   checkEnv();
 
   const server = new ApolloServer<Context>({
+    csrfPrevention: false,
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
@@ -24,6 +25,7 @@ const Main = async () => {
   const prisma = new PrismaClient();
 
   app.use(
+    
     "/graphql",
     cors({
       origin: process.env.CORS_ORIGIN,

@@ -28,14 +28,14 @@ export const uploadFile = async (
     const uploadStream = cloudinary.uploader.upload_stream(
       { resource_type: "auto", folder: `${resourceType}s` },
       (error, result) => {
-        if (error) {
+        if (error || !result) {
           console.error("Cloudinary upload error:", error);
           reject(new Error("Failed to upload file to Cloudinary"));
         } else {
-          // Return both the URL and the filename
+          console.log("Cloudinary upload result:", result);
           resolve({
-            url: result!.secure_url,
-            filename: result!.original_filename,
+            url: result.secure_url,
+            filename: result.original_filename,
           });
         }
       }

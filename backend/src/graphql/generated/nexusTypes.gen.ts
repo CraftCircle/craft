@@ -57,21 +57,21 @@ export interface NexusGenInputs {
     id?: string | null; // String
   }
   PostCreateInput: { // input type
-    audio?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
+    audio?: NexusGenScalars['Upload'] | null; // Upload
     content: string; // String!
-    image?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
+    image?: NexusGenScalars['Upload'] | null; // Upload
     title: string; // String!
-    video?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
+    video?: NexusGenScalars['Upload'] | null; // Upload
   }
   PostOrderByInput: { // input type
     createdAt?: NexusGenEnums['SortOrder'] | null; // SortOrder
   }
   PostUpdateInput: { // input type
-    audio?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
+    audio?: NexusGenScalars['Upload'] | null; // Upload
     content?: string | null; // String
-    image?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
+    image?: NexusGenScalars['Upload'] | null; // Upload
     title?: string | null; // String
-    video?: Array<NexusGenScalars['Upload'] | null> | null; // [Upload]
+    video?: NexusGenScalars['Upload'] | null; // Upload
   }
   PostWhereInput: { // input type
     content?: string | null; // String
@@ -153,14 +153,15 @@ export interface NexusGenObjects {
   }
   Mutation: {};
   Post: { // root type
-    audios?: Array<string | null> | null; // [String]
+    audio?: string | null; // String
+    authorId: string; // String!
     content: string; // String!
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     id: string; // ID!
-    images?: Array<string | null> | null; // [String]
+    image?: string | null; // String
     title: string; // String!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
-    videos?: Array<string | null> | null; // [String]
+    video?: string | null; // String
   }
   Query: {};
   Ticket: { // root type
@@ -214,14 +215,16 @@ export interface NexusGenFieldTypes {
     updatePost: NexusGenRootTypes['Post']; // Post!
   }
   Post: { // field return type
-    audios: Array<string | null> | null; // [String]
+    audio: string | null; // String
+    author: NexusGenRootTypes['User']; // User!
+    authorId: string; // String!
     content: string; // String!
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     id: string; // ID!
-    images: Array<string | null> | null; // [String]
+    image: string | null; // String
     title: string; // String!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
-    videos: Array<string | null> | null; // [String]
+    video: string | null; // String
   }
   Query: { // field return type
     currentUser: NexusGenRootTypes['User'] | null; // User
@@ -276,14 +279,16 @@ export interface NexusGenFieldTypeNames {
     updatePost: 'Post'
   }
   Post: { // field return type name
-    audios: 'String'
+    audio: 'String'
+    author: 'User'
+    authorId: 'String'
     content: 'String'
     createdAt: 'DateTime'
     id: 'ID'
-    images: 'String'
+    image: 'String'
     title: 'String'
     updatedAt: 'DateTime'
-    videos: 'String'
+    video: 'String'
   }
   Query: { // field return type name
     currentUser: 'User'

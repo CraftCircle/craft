@@ -80,22 +80,24 @@ type Mutation {
 }
 
 type Post {
-  audios: [String]
+  audio: String
+  author: User!
+  authorId: String!
   content: String!
   createdAt: DateTime!
   id: ID!
-  images: [String]
+  image: String
   title: String!
   updatedAt: DateTime!
-  videos: [String]
+  video: String
 }
 
 input PostCreateInput {
-  audio: [Upload]
+  audio: Upload
   content: String!
-  image: [Upload]
+  image: Upload
   title: String!
-  video: [Upload]
+  video: Upload
 }
 
 input PostOrderByInput {
@@ -103,11 +105,11 @@ input PostOrderByInput {
 }
 
 input PostUpdateInput {
-  audio: [Upload]
+  audio: Upload
   content: String
-  image: [Upload]
+  image: Upload
   title: String
-  video: [Upload]
+  video: Upload
 }
 
 input PostWhereInput {

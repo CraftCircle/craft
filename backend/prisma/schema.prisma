@@ -36,9 +36,9 @@ model Post {
     content   String
     author    User     @relation(fields: [authorId], references: [id])
     authorId  String
-    image     String[]
-    video     String[]
-    audio     String[]
+    image     String?
+    video     String?
+    audio     String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }

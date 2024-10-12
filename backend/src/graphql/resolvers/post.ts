@@ -4,7 +4,7 @@ import { removeEmpty } from "../helper/null";
 import { Context } from "../context";
 import { GraphQLError } from "graphql";
 import { uploadFile } from "../utils/upload";
-import { GraphQLUpload, FileUpload } from "graphql-upload-minimal";
+import { FileUpload } from "graphql-upload-minimal";
 
 export const PostQuery = extendType({
   type: "Query",
@@ -78,7 +78,7 @@ export const PostMutation = extendType({
         ),
       },
       resolve: async (_root, args, context: Context) => {
-        const { prisma, user, req, res } = context;
+        const { prisma, user } = context;
         if (!user) {
           throw new GraphQLError(
             "You must be logged in to perform this action",
@@ -110,50 +110,34 @@ export const PostMutation = extendType({
           });
         }
 
-        const { title, content, image, video, audio } = removeEmpty(
-          args.data
-        ) as {
-          title: string;
-          content: string;
-          image: FileUpload[];
-          video: FileUpload[];
-          audio: FileUpload[];
-        };
+        const { title, content, image, video, audio } = removeEmpty(args.data);
+        console.log("Image file received", image);
+        
 
-        let uploadedVideos: { url: string; filename: string }[] = [];
-        let uploadedImages: { url: string; filename: string }[] = [];
-        let uploadedAudios: { url: string; filename: string }[] = [];
-
+        let uploadedImage;
+        // , uploadedAudio, uploadedVideo;
         try {
-          // Upload images
-          if (image && image.length > 0) {
-            uploadedImages = await Promise.all(
-              image.map(async (file) => await uploadFile(file, "image"))
-            );
-          }
-          // Upload videos
-          if (video && video.length > 0) {
-            uploadedVideos = await Promise.all(
-              video.map(async (file) => await uploadFile(file, "video"))
-            );
-          }
-          // Upload audios
-          if (audio && audio.length > 0) {
-            uploadedAudios = await Promise.all(
-              audio.map(async (file) => await uploadFile(file, "audio"))
-            );
+          if (image) {
+            uploadedImage = await uploadFile(image, "image");
           }
 
-          // Create post
+          // if (video) {
+          //   uploadedVideo = await uploadFile(video, "video");
+          // }
+
+          // if (audio) {
+          //   uploadedAudio = await uploadFile(audio, "audio");
+          // }
+
+          // Create post in the database
           const post = await prisma.post.create({
             data: {
               title,
               content,
               authorId: currentUser.id,
-              // Save the URLs and filenames to the database
-              image: uploadedImages.map(({ url }) => url),
-              video: uploadedVideos.map(({ url }) => url),
-              audio: uploadedAudios.map(({ url }) => url),
+              image: uploadedImage!.url,
+              // video: uploadedVideo!.url,
+              // audio: uploadedAudio!.url,
             },
           });
 
