@@ -110,15 +110,19 @@ export const PostMutation = extendType({
           });
         }
 
-        const { title, content, image, video, audio } = removeEmpty(args.data);
+        const { title, content, image, video, audio } = args.data;
         console.log("Image file received", image);
-        
+        console.log("Title", title);
+        console.log("Content", content);
 
         let uploadedImage;
         // , uploadedAudio, uploadedVideo;
         try {
           if (image) {
             uploadedImage = await uploadFile(image, "image");
+            console.log("Uploaded image URL: ", uploadedImage.url);
+          } else {
+            console.log("No image was provided for upload.");
           }
 
           // if (video) {
@@ -129,7 +133,6 @@ export const PostMutation = extendType({
           //   uploadedAudio = await uploadFile(audio, "audio");
           // }
 
-          // Create post in the database
           const post = await prisma.post.create({
             data: {
               title,

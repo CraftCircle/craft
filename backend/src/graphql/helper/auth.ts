@@ -21,9 +21,9 @@ export function getJwtToken({ idToken }: { idToken: string }) {
     jwt.verify(
       idToken,
       getKey,
-      {
-        algorithms: ["RS256"],
-      },
+      // {
+      //   algorithms: ["RS256"],
+      // },
       (err, decoded) => {
         if (err) {
           return reject(err);

@@ -10,12 +10,12 @@ export const uploadFile = async (
   file: FileUpload,
   resourceType: "image" | "video" | "audio"
 ): Promise<UploadResult> => {
-  const { createReadStream, filename, mimetype } = file;
+  const { createReadStream, mimetype } = file;
 
   const allowedTypes = {
     image: ["image/jpeg", "image/png", "image/gif"],
     video: ["video/mp4", "video/mpeg", "video/avi"],
-    audio: ["audio/mpeg", "audio/wav"],
+    audio: ["audio/mpeg", "audio/wav", "audio/mp4"],
   };
 
   if (!allowedTypes[resourceType].includes(mimetype)) {

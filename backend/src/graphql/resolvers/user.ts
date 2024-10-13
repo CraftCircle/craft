@@ -213,10 +213,10 @@ const createToken = (jwtPayload: JwtPayload): string => {
       email: jwtPayload.email,
       role: jwtPayload.role,
     },
-    process.env.SECRET!,
+    process.env.JWT_SECRET!,
     {
-      expiresIn: "1h",
-      algorithm: "RS256",
+      expiresIn: "24h",
+      // algorithm: "RS256",
     }
   );
   return token;

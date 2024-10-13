@@ -75,12 +75,12 @@ callbackRouter.get("/", async (req: Request, res: Response) => {
         },
         process.env.SECRET_KEY!,
         {
-          algorithm: "RS256",
-          expiresIn: "1h",
-          header: {
-            kid: decodedToken.header.kid,
-            alg: "RS256",
-          },
+          // algorithm: "RS256",
+          expiresIn: "24h",
+          // header: {
+          //   kid: decodedToken.header.kid,
+          //   alg: "RS256",
+          // },
         }
       );
 

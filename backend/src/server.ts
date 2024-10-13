@@ -24,6 +24,14 @@ const Main = async () => {
 
   const prisma = new PrismaClient();
 
+  //  app.use((req, res, next) => {
+  //    console.log("Received request:", req.method, req.url);
+  //    if (req.body) {
+  //      console.log("Request body:", req.body);
+  //    }
+  //    next();
+  //  });
+
   app.use(
     
     "/graphql",
