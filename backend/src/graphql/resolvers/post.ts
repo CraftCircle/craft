@@ -4,7 +4,7 @@ import { removeEmpty } from "../helper/null";
 import { Context } from "../context";
 import { GraphQLError } from "graphql";
 import { uploadFile } from "../utils/upload";
-import { FileUpload } from "graphql-upload-minimal";
+// import { FileUpload } from "graphql-upload-minimal";
 
 export const PostQuery = extendType({
   type: "Query",
@@ -78,6 +78,7 @@ export const PostMutation = extendType({
         ),
       },
       resolve: async (_root, args, context: Context) => {
+        console.log("Received args:", args);
         const { prisma, user } = context;
         if (!user) {
           throw new GraphQLError(
@@ -110,16 +111,33 @@ export const PostMutation = extendType({
           });
         }
 
-        const { title, content, image, video, audio } = args.data;
-        console.log("Image file received", image);
-        console.log("Title", title);
-        console.log("Content", content);
+        const { title, content, image, video, audio } = removeEmpty(args.data);
+
+        console.log({image});
+        
 
         let uploadedImage;
         // , uploadedAudio, uploadedVideo;
         try {
           if (image) {
-            uploadedImage = await uploadFile(image, "image");
+            const resolvedImage = await image;
+
+            const { createReadStream, mimetype, filename } = resolvedImage;
+
+            console.log("Received file details:", {
+              filename: filename,
+              mimetype: mimetype,
+              fieldName: resolvedImage.fieldName,
+            });
+
+            if(!mimetype || !filename){
+              throw new GraphQLError("Invalid file received for upload", {
+                extensions: {
+                  message: "INVALID_FILE_RECEIVED_FOR_UPLOAD"
+                }
+              })
+            }
+            uploadedImage = await uploadFile(resolvedImage, "image");
             console.log("Uploaded image URL: ", uploadedImage.url);
           } else {
             console.log("No image was provided for upload.");
@@ -138,7 +156,7 @@ export const PostMutation = extendType({
               title,
               content,
               authorId: currentUser.id,
-              image: uploadedImage!.url,
+              image: uploadedImage?.url || null 
               // video: uploadedVideo!.url,
               // audio: uploadedAudio!.url,
             },
