@@ -16,7 +16,10 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "types":["node"],
-    "noFallthroughCasesInSwitch": false
+    "types": [
+      "node"
+    ],
+    "noFallthroughCasesInSwitch": false,
+    "paths": {}
   }
 }
