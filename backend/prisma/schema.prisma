@@ -1,0 +1,94 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+generator nexusPrisma {
+    provider = "nexus-prisma"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+//User Model
+model User {
+    id        String   @id @default(uuid()) @map("_id")
+    name      String?
+    email     String   @unique
+    password  String?
+    role      Role     @default(USER)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    Post      Post[]
+    Event     Event[]
+    Ticket    Ticket[]
+}
+
+enum Role {
+    USER
+    ADMIN
+}
+
+model Post {
+    id        String   @id @default(uuid()) @map("_id")
+    title     String
+    content   String
+    author    User     @relation(fields: [authorId], references: [id])
+    authorId  String
+    image     String?
+    video     String?
+    audio     String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Event {
+    id          String   @id @default(uuid()) @map("_id")
+    name        String
+    description String
+    amount      Float
+    eventDate   DateTime
+    location    String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    tickets     Ticket[]
+    createdBy   User     @relation(fields: [createdById], references: [id])
+    createdById String
+}
+
+model Ticket {
+    id        String   @id @default(uuid()) @map("_id")
+    event     Event    @relation(fields: [eventId], references: [id])
+    eventId   String
+    holder    User?    @relation(fields: [holderId], references: [id])
+    holderId  String?
+    createdAt DateTime @default(now())
+}
+
+model ScheduledMessage {
+  id          String   @id @default(uuid()) @map("_id")
+  subject     String?
+  content     String
+  type        MessageType
+  recipients  String[] 
+  sendTime    DateTime
+  createdAt   DateTime @default(now())
+  status      MessageStatus @default(PENDING)
+}
+
+enum MessageType {
+  EMAIL
+  SMS
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+
+// generator seed {
+//     provider = "prisma seed"
+// }
