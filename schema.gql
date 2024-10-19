@@ -2,6 +2,41 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input CreateUserInput {
+  """email of the user"""
+  email: String!
+
+  """name of the user"""
+  name: String!
+
+  """password of the user"""
+  password: String!
+}
+
+type Mutation {
+  createUser(createUserInput: CreateUserInput!): UserEntity!
+  removeUser(id: Float!): UserEntity!
+  updateUser(id: Float!, updateUserInput: UpdateUserDto!): UserEntity!
+}
+
 type Query {
+  findAll: [UserEntity!]!
+  findOne(id: Float!): UserEntity!
   sayHello: String!
+}
+
+input UpdateUserDto {
+  email: String
+  id: Float!
+
+  """name of the user"""
+  name: String
+  password: String
+}
+
+type UserEntity {
+  email: String!
+  id: Int!
+  name: String!
+  password: String!
 }
