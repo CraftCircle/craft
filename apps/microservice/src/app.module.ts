@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver } from '@nestjs/apollo';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { AppResolver } from './users/user.resolver';
 
 @Module({
   imports: [
@@ -11,7 +14,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     UsersModule,
     ClientsModule.register([
       {
-        name: 'SERVICE_A',
+        name: 'api',
         transport: Transport.TCP,
         options: {
           host: 'localhost',
@@ -19,7 +22,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         },
       },
       {
-        name: 'SERVICE_B',
+        name: 'api-gateway',
         transport: Transport.TCP,
         options: {
           host: 'localhost',
@@ -27,8 +30,14 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         },
       },
     ]),
+    GraphQLModule.forRoot({
+      driver: ApolloDriver,
+      autoSchemaFile: 'schema.gql',
+      sortSchema: true,
+      playground: true,
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AppResolver],
 })
 export class AppModule {}
