@@ -12,8 +12,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
 export class UserService {
   constructor(private prismaService: PrismaService) {}
-  async createUser(dto: CreateUserInput) {
-    const { email, password } = dto;
+  async createUser(createUserInput: CreateUserInput) {
+    const { email, password, name } = createUserInput; 
 
     const existingUser = await this.prismaService.user.findUnique({
       where: {
@@ -28,7 +28,8 @@ export class UserService {
 
     const user = await this.prismaService.user.create({
       data: {
-        ...dto,
+        name,
+        email,
         password: hashedPassword,
       },
     });
