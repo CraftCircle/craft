@@ -8,10 +8,30 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid()) @map("_id")
   email     String   @unique
   password  String
-  name      String?
+  name      String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Post      Post[]
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model Post {
+  id        String   @id @default(uuid()) @map("_id")
+  title     String
+  content   String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  image     String?
+  video     String?
+  audio     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

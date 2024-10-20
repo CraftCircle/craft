@@ -19,7 +19,7 @@ export class UsersController {
   }
 
   @MessagePattern('findOneUser')
-  async findOne(@Payload() id: number) {
+  async findOne(@Payload() id: string) {
     return this.usersService.findOne(id);
   }
 
@@ -29,7 +29,7 @@ export class UsersController {
   }
 
   @MessagePattern('removeUser')
-  async remove(@Payload() id: number) {
+  async remove(@Payload() id: string) {
     return this.usersService.remove(id);
   }
 }

@@ -11,32 +11,52 @@ input CreateUserInput {
 
   """password of the user"""
   password: String!
+
+  """role of the user"""
+  role: Role! = USER
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type Mutation {
   createUser(createUserInput: CreateUserInput!): UserEntity!
-  removeUser(id: Float!): UserEntity!
-  updateUser(id: Float!, updateUserInput: UpdateUserDto!): UserEntity!
+  removeUser(id: String!): UserEntity!
+  updateUser(id: String!, updateUserInput: UpdateUserDto!): UserEntity!
 }
 
 type Query {
   findAll: [UserEntity!]!
-  findOne(id: Float!): UserEntity!
+  findOne(id: String!): UserEntity!
   sayHello: String!
+}
+
+"""The roles a user can have"""
+enum Role {
+  ADMIN
+  USER
 }
 
 input UpdateUserDto {
   email: String
-  id: Float!
+  id: String!
 
   """name of the user"""
   name: String
   password: String
+
+  """role of the user"""
+  role: Role = USER
 }
 
 type UserEntity {
+  createdAt: DateTime!
   email: String!
-  id: Int!
+  id: String!
   name: String!
   password: String!
+  role: Role!
+  updatedAt: DateTime!
 }

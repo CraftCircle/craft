@@ -29,17 +29,17 @@ export class UserResolver {
   }
 
   @Query(() => UserEntity)
-  async findOne(@Args('id') id: number) {
+  async findOne(@Args('id') id: string) {
     return this.userService.findOne(id);
   }
 
   @Mutation(() => UserEntity)
-  async updateUser(@Args('id') id: number, @Args('updateUserInput') updateUserDto: UpdateUserDto) {
+  async updateUser(@Args('id') id: string, @Args('updateUserInput') updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
   }
 
   @Mutation(() => UserEntity)
-  async removeUser(@Args('id') id: number) {
+  async removeUser(@Args('id') id: string) {
     return this.userService.remove(id);
   }
 }

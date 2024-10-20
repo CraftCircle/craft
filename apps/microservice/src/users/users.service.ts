@@ -8,12 +8,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserInput } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(private prismaService: PrismaService) {}
   async createUser(createUserInput: CreateUserInput) {
-    const { email, password, name } = createUserInput; 
+    const { email, password, name, role = Role.USER } = createUserInput; 
 
     const existingUser = await this.prismaService.user.findUnique({
       where: {
@@ -30,6 +31,7 @@ export class UserService {
       data: {
         name,
         email,
+        role,
         password: hashedPassword,
       },
     });
@@ -41,12 +43,12 @@ export class UserService {
     return this.prismaService.user.findMany();
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const user = await this.prismaService.user.findUnique({ where: { id } });
     if (!user) throw new BadRequestException(`User with id #${id} not found`);
     return user;
   }
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     const existingUser = await this.prismaService.user.findUnique({
       where: { id },
     });
@@ -63,7 +65,7 @@ export class UserService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const existingUser = await this.prismaService.user.findUnique({
       where: { id },
     });

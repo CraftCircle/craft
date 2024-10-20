@@ -4,7 +4,7 @@ import { CreateUserInput } from './create-user.dto';
 @InputType()
 export class UpdateUserDto extends PartialType(CreateUserInput) {
   @Field()
-  id: number;
+  id: string;
   @Field({ nullable: true })
   password?: string;
 
