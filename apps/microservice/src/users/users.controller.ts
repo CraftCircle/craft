@@ -1,35 +1,52 @@
-import { Controller } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UserService } from './users.service';
 import { CreateUserInput } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 
 @Controller()
-export class UsersController {
-  constructor(private readonly usersService: UserService) {}
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
   @MessagePattern('createUser')
+  @Post()
   async create(@Payload() createUserInput: CreateUserInput) {
-    return this.usersService.createUser(createUserInput);
+    return this.userService.createUser(createUserInput);
   }
 
+
   @MessagePattern('findAllUsers')
+  @Get()
+  @UseGuards(JwtGuard)
   async findAll() {
-    return this.usersService.findAll();
+    return await this.userService.findAll();
   }
 
   @MessagePattern('findOneUser')
-  async findOne(@Payload() id: string) {
-    return this.usersService.findOne(id);
+  @UseGuards(JwtGuard)
+  async findOne(@Payload() email: string) {
+    return await this.userService.findOne(email);
   }
 
   @MessagePattern('updateUser')
+  @UseGuards(JwtGuard)
   async update(@Payload() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(updateUserDto.id, updateUserDto);
+    return this.userService.update(updateUserDto.email, updateUserDto);
   }
 
   @MessagePattern('removeUser')
-  async remove(@Payload() id: string) {
-    return this.usersService.remove(id);
+  async remove(@Payload() email: string) {
+    return this.userService.remove(email);
   }
 }

@@ -46,9 +46,7 @@ input UpdateUserDto {
   """name of the user"""
   name: String
   password: String
-
-  """role of the user"""
-  role: Role = USER
+  role: Role
 }
 
 type UserEntity {

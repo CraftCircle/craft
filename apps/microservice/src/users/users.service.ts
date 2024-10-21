@@ -36,42 +36,49 @@ export class UserService {
       },
     });
 
-    return user;
+    return user; 
   }
 
   findAll() {
     return this.prismaService.user.findMany();
   }
 
-  async findOne(id: string) {
+  async findById(id: string) {
     const user = await this.prismaService.user.findUnique({ where: { id } });
-    if (!user) throw new BadRequestException(`User with id #${id} not found`);
+    if (!user) throw new BadRequestException(`User with ID #${id} not found`);
     return user;
   }
-  async update(id: string, updateUserDto: UpdateUserDto) {
+
+  async findOne(email: string) {
+    const user = await this.prismaService.user.findUnique({ where: { email } });
+    if (!user) throw new BadRequestException(`User with email #${email} not found`);
+    return user;
+  }
+
+  async update(email: string, updateUserDto: UpdateUserDto) {
     const existingUser = await this.prismaService.user.findUnique({
-      where: { id },
+      where: { email },
     });
     if (!existingUser)
-      throw new BadRequestException(`User with id #${id} not found`);
+      throw new BadRequestException(`User with email #${email} not found`);
 
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
     return this.prismaService.user.update({
-      where: { id },
+      where: { email },
       data: updateUserDto,
     });
   }
 
-  async remove(id: string) {
+  async remove(email: string) {
     const existingUser = await this.prismaService.user.findUnique({
-      where: { id },
+      where: { email },
     });
     if (!existingUser)
-      throw new BadRequestException(`User with id #${id} not found`);
+      throw new BadRequestException(`User with email #${email} not found`);
 
-    return this.prismaService.user.delete({ where: { id } });
+    return this.prismaService.user.delete({ where: { email } });
   }
 }
