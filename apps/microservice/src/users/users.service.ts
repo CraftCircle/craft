@@ -1,6 +1,5 @@
 import {
   Injectable,
-  ForbiddenException,
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
@@ -9,12 +8,20 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserInput } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Role } from '@prisma/client';
+import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
   constructor(private prismaService: PrismaService) {}
   async createUser(createUserInput: CreateUserInput) {
-    const { email, password, name, role = Role.USER } = createUserInput; 
+    const {
+      email,
+      password,
+      name,
+      provider,
+      providerId,
+      role = Role.USER,
+    } = createUserInput;
 
     const existingUser = await this.prismaService.user.findUnique({
       where: {
@@ -25,7 +32,7 @@ export class UserService {
       throw new ConflictException('Email Is Already Registered');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = provider ? null : await bcrypt.hash(password, 10);
 
     const user = await this.prismaService.user.create({
       data: {
@@ -33,14 +40,22 @@ export class UserService {
         email,
         role,
         password: hashedPassword,
+        provider,
+        providerId,
       },
     });
 
-    return user; 
+    return user;
   }
 
   findAll() {
     return this.prismaService.user.findMany();
+  }
+
+  async findOneByProvider({ provider, providerId }: { provider: string; providerId: string }): Promise<UserEntity | null> {
+    return this.prismaService.user.findFirst({
+      where: { provider, providerId },
+    });
   }
 
   async findById(id: string) {
@@ -51,7 +66,8 @@ export class UserService {
 
   async findOne(email: string) {
     const user = await this.prismaService.user.findUnique({ where: { email } });
-    if (!user) throw new BadRequestException(`User with email #${email} not found`);
+    if (!user)
+      throw new BadRequestException(`User with email #${email} not found`);
     return user;
   }
 

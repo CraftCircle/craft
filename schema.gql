@@ -3,16 +3,22 @@
 # ------------------------------------------------------
 
 input CreateUserInput {
-  """email of the user"""
+  """Email of the user"""
   email: String!
 
-  """name of the user"""
+  """Name of the user"""
   name: String!
 
-  """password of the user"""
-  password: String!
+  """Password of the user"""
+  password: String
 
-  """role of the user"""
+  """Authentication provider (e.g., google)"""
+  provider: String
+
+  """ID from the authentication provider"""
+  providerId: String
+
+  """Role of the user"""
   role: Role! = USER
 }
 
@@ -23,14 +29,14 @@ scalar DateTime
 
 type Mutation {
   createUser(createUserInput: CreateUserInput!): UserEntity!
-  removeUser(id: String!): UserEntity!
-  updateUser(id: String!, updateUserInput: UpdateUserDto!): UserEntity!
+  removeUser(email: String!): UserEntity!
+  updateUser(email: String!, updateUserInput: UpdateUserDto!): UserEntity!
 }
 
 type Query {
   findAll: [UserEntity!]!
-  findOne(id: String!): UserEntity!
-  sayHello: String!
+  findOne(email: String!): UserEntity!
+  whoAmI: UserEntity!
 }
 
 """The roles a user can have"""
@@ -43,9 +49,15 @@ input UpdateUserDto {
   email: String
   id: String!
 
-  """name of the user"""
+  """Name of the user"""
   name: String
   password: String
+
+  """Authentication provider (e.g., google)"""
+  provider: String
+
+  """ID from the authentication provider"""
+  providerId: String
   role: Role
 }
 
@@ -54,7 +66,9 @@ type UserEntity {
   email: String!
   id: String!
   name: String!
-  password: String!
+  password: String
+  provider: String!
+  providerId: String!
   role: Role!
   updatedAt: DateTime!
 }

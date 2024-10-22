@@ -1,8 +1,10 @@
-import { Role } from "@prisma/client";
+import { Role } from '@prisma/client';
 
 export type RegisterRequestDto = {
   name: string;
   email: string;
-  role?: Role;
-  password: string;
+  role: Role;
+  password?: string;
+  provider: string;
+  providerId: string;
 };
