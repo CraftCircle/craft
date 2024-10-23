@@ -1,14 +1,14 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
-import { JwtGuard } from './auth/guards/jwt.guard';
+import { JwtAuthGuard } from './auth/guards/jwt.guard';
 
 async function bootstrap() {
   // Start the HTTP server for GraphQL
   const app = await NestFactory.create(AppModule);
 
   const reflector = app.get(Reflector);
-  app.useGlobalGuards(new JwtGuard(reflector));
+  app.useGlobalGuards(new JwtAuthGuard(reflector));
 
   // Start the microservice
   app.connectMicroservice<MicroserviceOptions>({

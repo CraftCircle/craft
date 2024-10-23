@@ -64,10 +64,13 @@ export class UserService {
     return user;
   }
 
-  async findOne(email: string) {
+  async findOne(email: string): Promise<UserEntity | null> {
     const user = await this.prismaService.user.findUnique({ where: { email } });
-    if (!user)
-      throw new BadRequestException(`User with email #${email} not found`);
+    if (!user) {
+      return null 
+    }
+      // throw new BadRequestException(`User with email #${email} not found`);
+    
     return user;
   }
 

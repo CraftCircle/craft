@@ -4,9 +4,12 @@ import * as bcrypt from 'bcrypt';
 import { UserEntity } from '../../src/users/entities/user.entity';
 import { AccessToken } from './types/AccessToken';
 import { UserService } from '../../src/users/users.service';
-import { RegisterRequestDto } from '../../src/auth/dto/register-request.dto';
+import { RegisterRequestDTO } from '../../src/auth/dto/register-request.dto';
 import { Role } from '@prisma/client';
 import { Profile } from 'passport-google-oauth20';
+import { LoginRequestDTO } from './dto/login-request.dto';
+import { LoginResponseDTO } from './dto/login-response.dto';
+import { RegisterResponseDTO } from './dto/register-response.dto';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
@@ -56,15 +59,23 @@ export class AuthService {
   /**
    * Issues a JWT token after a successful login.
    */
-  async login(user: UserEntity): Promise<AccessToken> {
+  async login(loginData: LoginRequestDTO): Promise<LoginResponseDTO> {
+    const user: UserEntity = await this.validateUser(
+      loginData.email,
+      loginData.password,
+    );
     const payload = { email: user.email, id: user.id, role: user.role };
-    return { access_token: this.jwtService.sign(payload) };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 
   /**
    * Registers a new user.
    */
-  async register(registerData: RegisterRequestDto): Promise<AccessToken> {
+  async register(
+    registerData: RegisterRequestDTO,
+  ): Promise<RegisterResponseDTO> {
     const existingUser = await this.userService.findOne(registerData.email);
     if (existingUser) {
       throw new BadRequestException('Email already exists');
@@ -89,6 +100,6 @@ export class AuthService {
       role: newUser.role,
     });
 
-    return { access_token: token };
+    return { access_token: token, };
   }
 }

@@ -27,8 +27,19 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input LoginRequestDTO {
+  email: String!
+  password: String!
+}
+
+type LoginResponseDTO {
+  access_token: String!
+}
+
 type Mutation {
   createUser(createUserInput: CreateUserInput!): UserEntity!
+  login(loginInput: LoginRequestDTO!): LoginResponseDTO!
+  register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
   removeUser(email: String!): UserEntity!
   updateUser(email: String!, updateUserInput: UpdateUserDto!): UserEntity!
 }
@@ -37,6 +48,19 @@ type Query {
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!
   whoAmI: UserEntity!
+}
+
+input RegisterRequestDTO {
+  email: String!
+  name: String!
+  password: String
+  provider: String
+  providerId: String
+  role: Role
+}
+
+type RegisterResponseDTO {
+  access_token: String!
 }
 
 """The roles a user can have"""

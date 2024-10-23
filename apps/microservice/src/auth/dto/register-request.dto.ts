@@ -1,10 +1,23 @@
 import { Role } from '@prisma/client';
+import { InputType, Field } from '@nestjs/graphql';
 
-export type RegisterRequestDto = {
-  name: string;
+@InputType()
+export class RegisterRequestDTO {
+  @Field(() => String)
   email: string;
-  role: Role;
+
+  @Field(() => String)
+  name: string;
+
+  @Field(() => String, { nullable: true })
   password?: string;
-  provider: string;
-  providerId: string;
-};
+
+  @Field(() => String, { nullable: true })
+  provider?: string;
+
+  @Field(() => String, { nullable: true })
+  providerId?: string;
+
+  @Field(() => Role, { nullable: true })
+  role?: Role; 
+}

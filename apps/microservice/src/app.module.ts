@@ -8,12 +8,19 @@ import { UserModule } from './users/users.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { JwtStrategy } from './auth/strategy/jwt.strategy';
+import { LocalStrategy } from './auth/strategy/local.strategy';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtGuard } from './auth/guards/jwt.guard';
+import { PassportModule } from '@nestjs/passport';
+import {  JwtAuthGuard } from './auth/guards/jwt.guard';
+import { AuthResolver } from './auth/auth.resolver';
+import { JwtStrategy } from './auth/strategy/jwt.strategy';
 @Module({
   imports: [
     PrismaModule,
+    PassportModule.register({
+      session: false,
+      defaultStrategy: 'jwt'
+    }),
     UserModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -41,16 +48,24 @@ import { JwtGuard } from './auth/guards/jwt.guard';
       autoSchemaFile: 'schema.gql',
       sortSchema: true,
       playground: true,
+      context: ({ req }) => ({
+        req,
+        user: req.headers.authorization
+          ? req.headers.authorization.split(' ')[1]
+          : null,
+      }),
     }),
     AuthModule,
   ],
   controllers: [AppController],
   providers: [
+    AuthResolver,
     AppService,
+    LocalStrategy,
     JwtStrategy,
     {
       provide: APP_GUARD,
-      useClass: JwtGuard,
+      useClass: JwtAuthGuard,
     },
   ],
 })

@@ -13,7 +13,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UserService } from './users.service';
 import { CreateUserInput } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtGuard } from '../auth/guards/jwt.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller()
 export class UserController {
@@ -28,19 +28,19 @@ export class UserController {
 
   @MessagePattern('findAllUsers')
   @Get()
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtAuthGuard)
   async findAll() {
     return await this.userService.findAll();
   }
 
   @MessagePattern('findOneUser')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtAuthGuard)
   async findOne(@Payload() email: string) {
     return await this.userService.findOne(email);
   }
 
   @MessagePattern('updateUser')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtAuthGuard)
   async update(@Payload() updateUserDto: UpdateUserDto) {
     return this.userService.update(updateUserDto.email, updateUserDto);
   }

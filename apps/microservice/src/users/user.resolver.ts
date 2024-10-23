@@ -3,7 +3,7 @@ import { UserService } from './users.service';
 import { UserEntity } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { GqlAuthGuard } from '../auth/guards/jwt.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UseGuards } from '@nestjs/common';
 
@@ -17,25 +17,25 @@ export class UserResolver {
   }
 
   @Query(() => UserEntity)
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   whoAmI(@CurrentUser() user: UserEntity) {
     return this.userService.findById(user.id);
   }
 
   @Query(() => [UserEntity])
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async findAll() {
     return this.userService.findAll();
   }
 
   @Query(() => UserEntity)
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async findOne(@Args('email') email: string) {
     return this.userService.findOne(email);
   }
 
   @Mutation(() => UserEntity)
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async updateUser(
     @Args('email') email: string,
     @Args('updateUserInput') updateUserDto: UpdateUserDto,
@@ -44,7 +44,7 @@ export class UserResolver {
   }
 
   @Mutation(() => UserEntity)
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async removeUser(@Args('email') email: string) {
     return this.userService.remove(email);
   }
