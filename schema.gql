@@ -37,6 +37,7 @@ type LoginResponseDTO {
 }
 
 type Mutation {
+  changeUserRole(id: String!, newRole: Role!): UserEntity!
   createUser(createUserInput: CreateUserInput!): UserEntity!
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
@@ -66,6 +67,7 @@ type RegisterResponseDTO {
 """The roles a user can have"""
 enum Role {
   ADMIN
+  SUPERADMIN
   USER
 }
 

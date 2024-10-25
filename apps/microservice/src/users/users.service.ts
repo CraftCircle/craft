@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserInput } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -96,6 +97,13 @@ export class UserService {
     // throw new BadRequestException(`User with email #${email} not found`);
 
     return user;
+  }
+
+  async updateUserRole(id: string, newRole: Role): Promise<UserEntity> {
+    return this.prismaService.user.update({
+      where: { id },
+      data: { role: newRole },
+    });
   }
 
   async update(email: string, updateUserDto: UpdateUserDto) {
