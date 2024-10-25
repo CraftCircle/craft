@@ -7,21 +7,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserInput } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Role } from '@prisma/client';
 import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
   constructor(private prismaService: PrismaService) {}
   async createUser(createUserInput: CreateUserInput) {
-    const {
-      email,
-      password,
-      name,
-      provider,
-      providerId,
-      role,
-    } = createUserInput;
+    const { email, password, name, provider, providerId, role } =
+      createUserInput;
 
     const existingUser = await this.prismaService.user.findUnique({
       where: {
@@ -63,7 +56,20 @@ export class UserService {
   }
 
   async findById(id: string) {
-    const user = await this.prismaService.user.findUnique({ where: { id } });
+    const user = await this.prismaService.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+        role: true,
+        provider: true,
+        providerId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
     if (!user) throw new BadRequestException(`User with ID #${id} not found`);
     return user;
   }

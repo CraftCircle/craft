@@ -18,7 +18,7 @@ export class UserResolver {
 
   @Query(() => UserEntity)
   @UseGuards(JwtAuthGuard)
-  whoAmI(@CurrentUser() user: UserEntity) {
+  whoAmI(@CurrentUser() user: { id: string }) {
     return this.userService.findById(user.id);
   }
 

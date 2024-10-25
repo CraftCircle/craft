@@ -22,7 +22,7 @@ export class AppController {
     return this.appService.getHello(
       resultApi,
       resultApiGateway,
-      user.userId,
+      user.id,
     );
   }
 }
