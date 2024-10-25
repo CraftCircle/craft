@@ -53,7 +53,7 @@ type Query {
 input RegisterRequestDTO {
   email: String!
   name: String!
-  password: String
+  password: String!
   provider: String
   providerId: String
   role: Role
@@ -90,7 +90,7 @@ type UserEntity {
   email: String!
   id: String!
   name: String!
-  password: String
+  password: String!
   provider: String!
   providerId: String!
   role: Role!

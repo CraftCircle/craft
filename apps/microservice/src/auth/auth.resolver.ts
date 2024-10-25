@@ -18,6 +18,7 @@ export class AuthResolver {
     return this.authService.register(registerInput);
   }
 
+  @Public()
   @Mutation(() => LoginResponseDTO)
   async login(
     @Args('loginInput') loginInput: LoginRequestDTO,

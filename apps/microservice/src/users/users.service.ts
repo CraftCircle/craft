@@ -20,7 +20,7 @@ export class UserService {
       name,
       provider,
       providerId,
-      role = Role.USER,
+      role,
     } = createUserInput;
 
     const existingUser = await this.prismaService.user.findUnique({
@@ -32,14 +32,12 @@ export class UserService {
       throw new ConflictException('Email Is Already Registered');
     }
 
-    const hashedPassword = provider ? null : await bcrypt.hash(password, 10);
-
     const user = await this.prismaService.user.create({
       data: {
         name,
         email,
         role,
-        password: hashedPassword,
+        password,
         provider,
         providerId,
       },
@@ -52,7 +50,13 @@ export class UserService {
     return this.prismaService.user.findMany();
   }
 
-  async findOneByProvider({ provider, providerId }: { provider: string; providerId: string }): Promise<UserEntity | null> {
+  async findOneByProvider({
+    provider,
+    providerId,
+  }: {
+    provider: string;
+    providerId: string;
+  }): Promise<UserEntity | null> {
     return this.prismaService.user.findFirst({
       where: { provider, providerId },
     });
@@ -65,12 +69,26 @@ export class UserService {
   }
 
   async findOne(email: string): Promise<UserEntity | null> {
-    const user = await this.prismaService.user.findUnique({ where: { email } });
+    const user = await this.prismaService.user.findUnique({
+      where: { email },
+
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+        role: true,
+        provider: true,
+        providerId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
     if (!user) {
-      return null 
+      return null;
     }
-      // throw new BadRequestException(`User with email #${email} not found`);
-    
+    // throw new BadRequestException(`User with email #${email} not found`);
+
     return user;
   }
 

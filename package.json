@@ -34,6 +34,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "^5.21.1",
     "@types/": "nestjs/graphql",
+    "@types/bcrypt": "^5.0.2",
     "@types/mocha": "^10.0.9",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-jwt": "^4.0.1",

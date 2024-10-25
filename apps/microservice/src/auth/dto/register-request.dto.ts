@@ -9,7 +9,7 @@ export class RegisterRequestDTO {
   @Field(() => String)
   name: string;
 
-  @Field(() => String, { nullable: true })
+  @Field(() => String)
   password?: string;
 
   @Field(() => String, { nullable: true })

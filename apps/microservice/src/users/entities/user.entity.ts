@@ -13,8 +13,8 @@ export class UserEntity implements User {
   @Field()
   email: string;
 
-  @Field({ nullable: true })
-  password: string | null;
+  @Field()
+  password: string;
   @Field()
   name: string;
 

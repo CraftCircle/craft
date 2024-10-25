@@ -1,8 +1,7 @@
-import { BadRequestException, Injectable, Scope } from '@nestjs/common';
+import { BadRequestException, Injectable, Scope, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from '../../src/users/entities/user.entity';
-import { AccessToken } from './types/AccessToken';
 import { UserService } from '../../src/users/users.service';
 import { RegisterRequestDTO } from '../../src/auth/dto/register-request.dto';
 import { Role } from '@prisma/client';
@@ -13,6 +12,8 @@ import { RegisterResponseDTO } from './dto/register-response.dto';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
+  // private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
@@ -23,48 +24,30 @@ export class AuthService {
    */
   async validateUser(email: string, password: string): Promise<UserEntity> {
     const user: UserEntity = await this.userService.findOne(email);
+
     if (!user) {
       throw new BadRequestException('User not found');
     }
+
     const isMatch: boolean = bcrypt.compareSync(password, user.password);
+
     if (!isMatch) {
-      throw new BadRequestException('Password does not match');
+      throw new BadRequestException('Invalid credentials');
     }
-    return user;
-  }
 
-  /**
-   * Validates user login via Google OAuth.
-   */
-  async validateUserByGoogle(profile: Profile): Promise<UserEntity> {
-    const { id, name, emails } = profile;
-
-    let user = await this.userService.findOneByProvider({
-      provider: 'google',
-      providerId: id,
-    });
-
-    if (!user) {
-      user = await this.userService.createUser({
-        email: emails[0].value,
-        name: name.givenName,
-        provider: 'google',
-        providerId: id,
-        role: Role.USER,
-      });
-    }
     return user;
   }
 
   /**
    * Issues a JWT token after a successful login.
    */
-  async login(loginData: LoginRequestDTO): Promise<LoginResponseDTO> {
+  async login(loginInput: LoginRequestDTO): Promise<LoginResponseDTO> {
     const user: UserEntity = await this.validateUser(
-      loginData.email,
-      loginData.password,
+      loginInput.email,
+      loginInput.password,
     );
-    const payload = { email: user.email, id: user.id, role: user.role };
+
+    const payload = { email: user.email, sub: user.id, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
     };
@@ -81,17 +64,15 @@ export class AuthService {
       throw new BadRequestException('Email already exists');
     }
 
-    const hashedPassword = registerData.password
-      ? await bcrypt.hash(registerData.password, 10)
-      : null; // For Google users, password may be null
+    const hashedPassword = await bcrypt.hash(registerData.password, 10);
 
     const newUser = await this.userService.createUser({
       email: registerData.email,
       name: registerData.name,
       password: hashedPassword,
       role: registerData.role || Role.USER,
-      provider: registerData.provider,
-      providerId: registerData.providerId,
+      provider: registerData.provider || 'email',
+      providerId: registerData.providerId || null,
     });
 
     const token = this.jwtService.sign({
@@ -100,6 +81,6 @@ export class AuthService {
       role: newUser.role,
     });
 
-    return { access_token: token, };
+    return { access_token: token };
   }
 }
