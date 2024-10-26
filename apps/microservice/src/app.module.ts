@@ -14,6 +14,8 @@ import { PassportModule } from '@nestjs/passport';
 import {  JwtAuthGuard } from './auth/guards/jwt.guard';
 import { AuthResolver } from './auth/auth.resolver';
 import { JwtStrategy } from './auth/strategy/jwt.strategy';
+import { UploadModule } from './upload/upload.module';
+import { PostModule } from './posts/posts.module';
 @Module({
   imports: [
     PrismaModule,
@@ -46,6 +48,7 @@ import { JwtStrategy } from './auth/strategy/jwt.strategy';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
+      // uploads: true,
       sortSchema: true,
       playground: true,
       context: ({ req }) => ({
@@ -56,6 +59,8 @@ import { JwtStrategy } from './auth/strategy/jwt.strategy';
       }),
     }),
     AuthModule,
+    UploadModule,
+    PostModule,
   ],
   controllers: [AppController],
   providers: [

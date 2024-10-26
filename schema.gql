@@ -2,6 +2,14 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input CreatePostInput {
+  audio: String
+  content: String!
+  image: String
+  title: String!
+  video: String
+}
+
 input CreateUserInput {
   """Email of the user"""
   email: String!
@@ -38,16 +46,33 @@ type LoginResponseDTO {
 
 type Mutation {
   changeUserRole(id: String!, newRole: Role!): UserEntity!
+  createPost(createPostInput: CreatePostInput!): PostEntity!
   createUser(createUserInput: CreateUserInput!): UserEntity!
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
+  removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
+  updatePost(updatePostInput: UpdatePostInput!): PostEntity!
   updateUser(email: String!, updateUserInput: UpdateUserDto!): UserEntity!
+}
+
+type PostEntity {
+  audio: String
+  authorId: String!
+  content: String!
+  createdAt: DateTime!
+  id: String!
+  image: String
+  title: String!
+  updatedAt: DateTime!
+  video: String
 }
 
 type Query {
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!
+  post(id: String!): PostEntity!
+  posts: [PostEntity!]!
   whoAmI: UserEntity!
 }
 
@@ -69,6 +94,15 @@ enum Role {
   ADMIN
   SUPERADMIN
   USER
+}
+
+input UpdatePostInput {
+  audio: String
+  content: String
+  id: String!
+  image: String
+  title: String
+  video: String
 }
 
 input UpdateUserDto {
