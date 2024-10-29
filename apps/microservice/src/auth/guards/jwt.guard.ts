@@ -1,11 +1,12 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
-
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
+  private readonly logger = new Logger(JwtAuthGuard.name);
+
   constructor(private readonly reflector: Reflector) {
     super();
   }
@@ -17,26 +18,28 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ]);
 
     if (isPublic) {
-      // If the route is marked public, skip the guard
+      this.logger.log('Public route accessed');
       return true;
     }
 
-    // Otherwise, proceed with the usual JWT authentication
-    return super.canActivate(context);
+    const isActivated = super.canActivate(context);
+    this.logger.log(`Guard activated. User should be attached to request.`);
+    return isActivated;
   }
 
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
-    return ctx.getContext().req;
+    const req = ctx.getContext().req;
+    this.logger.log(`User in getRequest: ${JSON.stringify(req.user)}`);
+    return req;
   }
 }
-
 
 // @Injectable()
 // export class GqlAuthGuard extends AuthGuard('jwt') {
 //   getRequest(context: ExecutionContext) {
 //     const ctx = GqlExecutionContext.create(context);
-//     return ctx.getContext().req; 
+//     return ctx.getContext().req;
 //   }
 // }
 

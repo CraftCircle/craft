@@ -2,26 +2,21 @@ import { Module } from '@nestjs/common';
 import { UploadService } from './upload.service';
 import { UploadResolver } from './upload.resolver';
 import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { UploadController } from './upload.controller';
-import { CloudinaryProvider } from './cloudinary.config'; 
+import { CloudinaryProvider } from './cloudinary.config';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     ConfigModule,
     MulterModule.register({
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const filename = `${Date.now()}-${file.originalname}`;
-          cb(null, filename);
-        },
-      }),
+      storage: memoryStorage(),
+      limits: { fileSize: 20 * 1024 * 1024 },
     }),
   ],
   controllers: [UploadController],
   providers: [UploadResolver, UploadService, CloudinaryProvider],
-  exports:[UploadResolver, UploadService, CloudinaryProvider]
+  exports: [UploadResolver, UploadService, CloudinaryProvider],
 })
 export class UploadModule {}

@@ -1,26 +1,22 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreatePostInput } from './dto/create-post.input';
 import { UpdatePostInput } from './dto/update-post.input';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { PostEntity } from './entities/post.entity';
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class PostService {
   private readonly logger = new Logger(PostService.name);
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private readonly uploadService: UploadService,
+  ) {}
   async createPost(
-    createPostInput: CreatePostInput,
+    { title, content, audio, image, video }: CreatePostInput,
     user: UserEntity,
-    fileUrl?: string,
   ): Promise<PostEntity> {
-    const { title, content, audio, image, video } = createPostInput;
-
-    //Check if user is an ADMIN
-    if (user.role !== 'ADMIN') {
-      throw new ForbiddenException('Only admins can create posts');
-    }
-
     try {
       const post = await this.prismaService.post.create({
         data: {

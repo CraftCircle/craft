@@ -7,13 +7,14 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../users/entities/user.entity';
 import {
+  BadRequestException,
+  ForbiddenException,
   Logger,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from '../upload/upload.service';
+import { FileUpload, GraphQLUpload } from 'graphql-upload-minimal';
+import { streamToBuffer } from '../upload/upload.resolver';
 
 @Resolver(() => PostEntity)
 export class PostResolver {
@@ -25,19 +26,120 @@ export class PostResolver {
 
   @Mutation(() => PostEntity)
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('image'))
   async createPost(
     @Args('createPostInput') createPostInput: CreatePostInput,
     @CurrentUser() user: UserEntity,
-    @UploadedFile() file: Express.Multer.File,
+    @Args({ name: 'image', type: () => GraphQLUpload, nullable: true })
+    image?: FileUpload,
+    @Args({ name: 'video', type: () => GraphQLUpload, nullable: true })
+    video?: FileUpload,
+    @Args({ name: 'audio', type: () => GraphQLUpload, nullable: true })
+    audio?: FileUpload,
   ): Promise<PostEntity> {
-    
-    this.logger.log(`File received: ${file?.originalname}`);
-    this.logger.log('Received createPost mutation with input:');
-    this.logger.log(JSON.stringify(createPostInput));
+    this.logger.log('Starting createPost mutation');
 
-    const uploadResult = await this.uploadService.handleUpload(file);
-    return this.postService.createPost(createPostInput, user, uploadResult.url);
+    this.logger.log(`User details: ${JSON.stringify(user)}`);
+
+    // Check if the user has the admin role
+    if (user.role !== 'ADMIN') {
+      this.logger.error('User does not have permission to create posts');
+      throw new ForbiddenException('Only admins can create posts');
+    }
+
+    try {
+      if (image) {
+        this.logger.log('Processing image upload...');
+        const { createReadStream, filename } = image;
+        const fileBuffer = await streamToBuffer(createReadStream());
+        this.logger.log('Image file converted to buffer');
+
+        const imageUploadResult = await this.uploadService.handleUpload(
+          {
+            buffer: fileBuffer,
+            originalname: filename,
+          } as Express.Multer.File,
+          3,
+          // 'image',
+        );
+
+        this.logger.log(
+          `Image uploaded to Cloudinary. URL: ${imageUploadResult}`,
+        );
+
+        createPostInput.image = imageUploadResult;
+
+        this.logger.log(
+          `Assigned image URL to createPostInput: ${createPostInput.image}`,
+        );
+      }
+
+      if (audio) {
+        this.logger.log('Processing audio upload...');
+        const { createReadStream, filename } = audio;
+        const fileBuffer = await streamToBuffer(createReadStream());
+        this.logger.log('Audio file converted to buffer');
+
+        const audioUploadResult = await this.uploadService.handleUpload(
+          {
+            buffer: fileBuffer,
+            originalname: filename,
+          } as Express.Multer.File,
+          3,
+          // 'video',
+        );
+
+        this.logger.log(
+          `Audio uploaded to Cloudinary. URL: ${audioUploadResult}`,
+        );
+
+        createPostInput.audio = audioUploadResult;
+
+        this.logger.log(
+          `Assigned audio URL to createPostInput: ${createPostInput.audio}`,
+        );
+      }
+
+      if (video) {
+        this.logger.log('Processing video upload...');
+        const { createReadStream, filename } = video;
+        const fileBuffer = await streamToBuffer(createReadStream());
+        this.logger.log('Video file converted to buffer');
+
+        const videoUploadResult = await this.uploadService.handleUpload(
+          {
+            buffer: fileBuffer,
+            originalname: filename,
+          } as Express.Multer.File,
+          3,
+          // 'video',
+        );
+
+        this.logger.log(
+          `Video uploaded to Cloudinary. URL: ${videoUploadResult}`,
+        );
+
+        createPostInput.video = videoUploadResult;
+
+        this.logger.log(
+          `Assigned video URL to createPostInput: ${createPostInput.video}`,
+        );
+      }
+
+      // Call the postService to create the post
+      const createdPost = await this.postService.createPost(
+        createPostInput,
+        user,
+      );
+      this.logger.log(`Post created successfully with ID: ${createdPost.id}`);
+      return createdPost;
+    } catch (error) {
+      this.logger.error(
+        'Detailed error in createPost mutation:',
+        error.message,
+      );
+      this.logger.error(error.stack);
+      throw new BadRequestException('Failed to create post');
+    }
   }
 
   @Query(() => [PostEntity], { name: 'posts' })

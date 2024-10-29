@@ -46,26 +46,27 @@ type LoginResponseDTO {
 
 type Mutation {
   changeUserRole(id: String!, newRole: Role!): UserEntity!
-  createPost(createPostInput: CreatePostInput!): PostEntity!
+  createPost(audio: Upload, createPostInput: CreatePostInput!, image: Upload, video: Upload): PostEntity!
   createUser(createUserInput: CreateUserInput!): UserEntity!
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
+  singleUpload(file: Upload!): String!
   updatePost(updatePostInput: UpdatePostInput!): PostEntity!
   updateUser(email: String!, updateUserInput: UpdateUserDto!): UserEntity!
 }
 
 type PostEntity {
-  audio: String
+  audio: String!
   authorId: String!
   content: String!
   createdAt: DateTime!
   id: String!
-  image: String
+  image: String!
   title: String!
   updatedAt: DateTime!
-  video: String
+  video: String!
 }
 
 type Query {
@@ -120,6 +121,9 @@ input UpdateUserDto {
   providerId: String
   role: Role
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 type UserEntity {
   createdAt: DateTime!

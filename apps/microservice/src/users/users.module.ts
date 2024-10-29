@@ -11,3 +11,5 @@ import { UserResolver } from './user.resolver';
   exports:[UserService]
 })
 export class UserModule {}
+
+

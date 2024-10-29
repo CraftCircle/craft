@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -11,21 +11,25 @@ import { AuthModule } from './auth/auth.module';
 import { LocalStrategy } from './auth/strategy/local.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { PassportModule } from '@nestjs/passport';
-import {  JwtAuthGuard } from './auth/guards/jwt.guard';
+import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { AuthResolver } from './auth/auth.resolver';
 import { JwtStrategy } from './auth/strategy/jwt.strategy';
 import { UploadModule } from './upload/upload.module';
 import { PostModule } from './posts/posts.module';
+import { GraphQLUpload } from 'graphql-upload-minimal';
+import { graphqlUploadExpress } from 'graphql-upload-minimal';
+
 @Module({
   imports: [
     PrismaModule,
     PassportModule.register({
       session: false,
-      defaultStrategy: 'jwt'
+      defaultStrategy: 'jwt',
     }),
     UserModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env'
     }),
     ClientsModule.register([
       {
@@ -48,15 +52,10 @@ import { PostModule } from './posts/posts.module';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
-      // uploads: true,
       sortSchema: true,
       playground: true,
-      context: ({ req }) => ({
-        req,
-        user: req.headers.authorization
-          ? req.headers.authorization.split(' ')[1]
-          : null,
-      }),
+      csrfPrevention: false,
+      context: ({ req }) => ({ req }),
     }),
     AuthModule,
     UploadModule,
@@ -64,6 +63,10 @@ import { PostModule } from './posts/posts.module';
   ],
   controllers: [AppController],
   providers: [
+    {
+      provide: 'Upload',
+      useValue: GraphQLUpload,
+    },
     AuthResolver,
     AppService,
     LocalStrategy,
@@ -74,4 +77,8 @@ import { PostModule } from './posts/posts.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 })).forRoutes('graphql');
+  }
+}
