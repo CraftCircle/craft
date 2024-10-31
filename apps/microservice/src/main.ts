@@ -7,13 +7,13 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'error', 'warn', 'debug', 'verbose'], // Enable detailed logging
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'], 
   });
 
   // Set up global validation pipe for input validation and logging
   app.useGlobalPipes(new ValidationPipe());
 
-  const logger = new Logger('Bootstrap'); // Use a named logger for clarity
+  const logger = new Logger('Bootstrap'); 
 
   logger.log('Starting CraftCircle Backend...');
 
@@ -22,7 +22,7 @@ async function bootstrap() {
   app.enableCors();
 
   // Log each incoming request for debugging
-  app.use((req, res, next) => {
+  app.use((req: Request, res: any, next: any) => {
     logger.debug(`Incoming Request: ${req.method} ${req.url}`);
     res.on('finish', () => {
       logger.verbose(

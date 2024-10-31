@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { UploadService } from './upload.service';
 import { GraphQLUpload } from 'graphql-upload-minimal';
 import { FileUpload } from 'graphql-upload-minimal';
@@ -50,6 +50,37 @@ export class UploadResolver {
       }
       throw new Error('File upload failed');
     }
+  }
+
+  @Mutation(() => [String])
+  async multipleUpload(
+    @Args({ name: 'files', type: () => [GraphQLUpload] }) files: FileUpload[],
+  ): Promise<string[]> {
+    this.logger.log('Starting multiple file upload');
+    const uploadPromises = files.map(async (file) => {
+      const { createReadStream, filename } = file;
+      this.logger.log(`Received file ${filename}`);
+
+      try {
+        // Convert the file stream to buffer for upload
+        const fileBuffer = await streamToBuffer(createReadStream());
+        this.logger.log(`Converted file ${filename} to buffer for upload`);
+
+        // Attempt to upload the file using the UploadService
+        const result = await this.uploadService.handleUpload({
+          buffer: fileBuffer,
+          originalname: filename,
+        } as Express.Multer.File);
+
+        this.logger.log(`File uploaded successfully with URL: ${result}`);
+        return result;
+      } catch (error) {
+        this.logger.error(`File upload failed for ${filename}`, error.message);
+        throw new Error(`File upload failed for ${filename}`);
+      }
+    });
+
+    return Promise.all(uploadPromises);
   }
 }
 

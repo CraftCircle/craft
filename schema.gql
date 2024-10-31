@@ -49,6 +49,7 @@ type Mutation {
   createPost(audio: Upload, createPostInput: CreatePostInput!, image: Upload, video: Upload): PostEntity!
   createUser(createUserInput: CreateUserInput!): UserEntity!
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
+  multipleUpload(files: [Upload!]!): [String!]!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!

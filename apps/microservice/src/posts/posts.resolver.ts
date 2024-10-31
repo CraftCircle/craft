@@ -85,7 +85,7 @@ export class PostResolver {
             originalname: filename,
           } as Express.Multer.File,
           3,
-          // 'video',
+          
         );
 
         this.logger.log(
@@ -111,7 +111,7 @@ export class PostResolver {
             originalname: filename,
           } as Express.Multer.File,
           3,
-          // 'video',
+          
         );
 
         this.logger.log(

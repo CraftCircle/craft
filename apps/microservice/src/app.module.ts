@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { PrismaModule } from './prisma/prisma.module';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { UserModule } from './users/users.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule } from '@nestjs/config';
@@ -29,7 +30,7 @@ import { graphqlUploadExpress } from 'graphql-upload-minimal';
     UserModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env'
+      envFilePath: '.env',
     }),
     ClientsModule.register([
       {
@@ -52,9 +53,10 @@ import { graphqlUploadExpress } from 'graphql-upload-minimal';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
+      playground: false,
       sortSchema: true,
-      playground: true,
       csrfPrevention: false,
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
       context: ({ req }) => ({ req }),
     }),
     AuthModule,
@@ -79,6 +81,10 @@ import { graphqlUploadExpress } from 'graphql-upload-minimal';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 })).forRoutes('graphql');
+    consumer
+      .apply(
+        graphqlUploadExpress({ maxFileSize: 1024 * 1024 * 50, maxFiles: 10 }),
+      )
+      .forRoutes('graphql');
   }
 }
