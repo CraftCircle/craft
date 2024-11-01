@@ -5,6 +5,7 @@ import {
   UploadApiResponse,
   UploadApiErrorResponse,
 } from 'cloudinary';
+import { FileUpload } from 'graphql-upload-minimal';
 
 @Injectable()
 export class UploadService {
@@ -98,10 +99,25 @@ export class UploadService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  async uploadFiles(
-    files: Express.Multer.File[],
-    // mediaType: 'image' | 'video',
-  ): Promise<string[]> {
+  async convertToMulterFile(
+    fileUpload: FileUpload,
+  ): Promise<Express.Multer.File> {
+    const stream = fileUpload.createReadStream();
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+
+    return {
+      buffer,
+      originalname: fileUpload.filename,
+      mimetype: fileUpload.mimetype,
+      size: buffer.length,
+    } as Express.Multer.File;
+  }
+
+  async uploadFiles(files: Express.Multer.File[]): Promise<string[]> {
     return Promise.all(files.map((file) => this.handleUpload(file, 3)));
   }
 

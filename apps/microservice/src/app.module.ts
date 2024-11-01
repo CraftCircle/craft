@@ -19,6 +19,11 @@ import { UploadModule } from './upload/upload.module';
 import { PostModule } from './posts/posts.module';
 import { GraphQLUpload } from 'graphql-upload-minimal';
 import { graphqlUploadExpress } from 'graphql-upload-minimal';
+import { EventsModule } from './events/events.module';
+import { TicketsModule } from './tickets/tickets.module';
+import { PaymentsModule } from './payments/payments.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { RolesGuard } from './auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -62,6 +67,10 @@ import { graphqlUploadExpress } from 'graphql-upload-minimal';
     AuthModule,
     UploadModule,
     PostModule,
+    EventsModule,
+    TicketsModule,
+    PaymentsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -69,14 +78,18 @@ import { graphqlUploadExpress } from 'graphql-upload-minimal';
       provide: 'Upload',
       useValue: GraphQLUpload,
     },
-    AuthResolver,
-    AppService,
-    LocalStrategy,
-    JwtStrategy,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    AuthResolver,
+    AppService,
+    LocalStrategy,
+    JwtStrategy,
   ],
 })
 export class AppModule implements NestModule {

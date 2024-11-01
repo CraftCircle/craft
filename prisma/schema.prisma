@@ -8,22 +8,74 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid()) @map("_id")
-  email      String   @unique
-  password   String?
-  provider   String   @default("email") 
-  providerId String?
-  name       String
-  role       Role     @default(USER)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  Post       Post[]
+  id          String   @id @default(uuid()) @map("_id")
+  email       String   @unique
+  password    String?
+  provider    String   @default("email")
+  providerId  String?
+  name        String
+  phoneNumber String?
+  role        Role     @default(USER)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  post        Post[]
+  event       Event[]
+  ticket      Ticket[]
 }
 
 enum Role {
   ADMIN
   USER
   SUPERADMIN
+}
+
+model Event {
+  id          String       @id @default(uuid()) @map("_id")
+  name        String
+  description String
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  image       String
+  location    String
+  creatorId   String
+  User        User         @relation(fields: [creatorId], references: [id])
+  tickets     Ticket[]
+  ticketTypes TicketType[]
+}
+
+model Ticket {
+  id            String         @id @default(uuid()) @map("_id")
+  name          String
+  phoneNumber   String
+  email         String
+  price         Float
+  ticketType    TicketTypeEnum
+  transactionId String         @unique
+  quantity      Int
+  scanned       Boolean        @default(false)
+  eventId       String
+  userId        String
+  event         Event          @relation(fields: [eventId], references: [id])
+  user          User           @relation(fields: [userId], references: [id])
+  createdAt     DateTime       @default(now())
+}
+
+enum TicketTypeEnum {
+  GENERAL
+  STUDENT
+  VIP
+}
+
+model TicketType {
+  id         String         @id @default(uuid()) @map("_id")
+  ticketType TicketTypeEnum
+  price      Float
+  quantity   Int
+  eventId    String
+  event      Event          @relation(fields: [eventId], references: [id])
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 }
 
 model Post {

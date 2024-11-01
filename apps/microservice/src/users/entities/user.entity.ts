@@ -26,6 +26,9 @@ export class UserEntity implements User {
   provider: string;
 
   @Field()
+  phoneNumber: string;
+
+  @Field()
   providerId: string;
 
   @Field()

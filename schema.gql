@@ -2,12 +2,46 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input CreateEventInput {
+  date: DateTime!
+  description: String!
+  endTime: DateTime!
+  image: Upload!
+  location: String!
+  name: String!
+  startTime: DateTime!
+}
+
+input CreateNotificationInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input CreatePaymentInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
 input CreatePostInput {
   audio: String
   content: String!
   image: String
   title: String!
   video: String
+}
+
+input CreateTicketPurchaseDTO {
+  eventId: String!
+  quantity: Int!
+  ticketTypeId: String!
+  transactionId: String!
+}
+
+input CreateTicketTypeDTO {
+  eventId: String!
+  price: Float!
+  quantity: Int!
+  ticketType: TicketTypeEnum!
 }
 
 input CreateUserInput {
@@ -35,6 +69,11 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type Event {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
 input LoginRequestDTO {
   email: String!
   password: String!
@@ -46,16 +85,35 @@ type LoginResponseDTO {
 
 type Mutation {
   changeUserRole(id: String!, newRole: Role!): UserEntity!
+  createEvent(createEventInput: CreateEventInput!): Event!
+  createNotification(createNotificationInput: CreateNotificationInput!): Notification!
+  createPayment(createPaymentInput: CreatePaymentInput!): Payment!
   createPost(audio: Upload, createPostInput: CreatePostInput!, image: Upload, video: Upload): PostEntity!
+  createTicketType(createTicketTypeDTO: CreateTicketTypeDTO!): TicketEntity!
   createUser(createUserInput: CreateUserInput!): UserEntity!
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
   multipleUpload(files: [Upload!]!): [String!]!
+  purchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketEntity!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
+  removeNotification(id: Int!): Notification!
+  removePayment(id: Int!): Payment!
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
   singleUpload(file: Upload!): String!
+  updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
+  updatePayment(updatePaymentInput: UpdatePaymentInput!): Payment!
   updatePost(updatePostInput: UpdatePostInput!): PostEntity!
   updateUser(email: String!, updateUserInput: UpdateUserDto!): UserEntity!
+}
+
+type Notification {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Payment {
+  """Example field (placeholder)"""
+  exampleField: Int!
 }
 
 type PostEntity {
@@ -71,8 +129,13 @@ type PostEntity {
 }
 
 type Query {
+  events: [Event!]!
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!
+  notification(id: Int!): Notification!
+  notifications: [Notification!]!
+  payment(id: Int!): Payment!
+  payments: [Payment!]!
   post(id: String!): PostEntity!
   posts: [PostEntity!]!
   whoAmI: UserEntity!
@@ -96,6 +159,36 @@ enum Role {
   ADMIN
   SUPERADMIN
   USER
+}
+
+type TicketEntity {
+  email: String!
+  eventId: String!
+  name: String!
+  phoneNumber: String!
+  price: Float!
+  quantity: Int!
+  ticketType: TicketTypeEnum!
+  transactionId: String!
+}
+
+"""The type of ticket"""
+enum TicketTypeEnum {
+  GENERAL
+  STUDENT
+  VIP
+}
+
+input UpdateNotificationInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input UpdatePaymentInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
 }
 
 input UpdatePostInput {
@@ -132,6 +225,7 @@ type UserEntity {
   id: String!
   name: String!
   password: String!
+  phoneNumber: String!
   provider: String!
   providerId: String!
   role: Role!
