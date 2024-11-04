@@ -21,6 +21,8 @@ export class CreateEventInput {
   @Field()
   location: string;
 
-  @Field(() => GraphQLUpload) // Support image uploads
+  @Field(() => GraphQLUpload, { nullable: true
+    
+  }) // Support image uploads
   image?: FileUpload;
 }

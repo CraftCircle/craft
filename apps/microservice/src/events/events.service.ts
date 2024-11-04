@@ -1,24 +1,35 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateEventInput } from './dto/create-event.input';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
+import { FileUpload } from 'graphql-upload-minimal';
 
 @Injectable()
 export class EventsService {
+  private readonly logger = new Logger(UploadService.name);
   constructor(
     private prismaService: PrismaService,
     private uploadService: UploadService,
   ) {}
 
-  async create(createEventInput: CreateEventInput, creatorId: string) {
-    let imageUrl: string | undefined;
+  async create(
+    createEventInput: CreateEventInput,
+    creatorId: string,
+    image: FileUpload
+  ) {
+    if (!image) {
+      throw new BadRequestException('Image is required for event creation');
+    }
 
-    if (createEventInput.image) {
-      const multerFile = await this.uploadService.convertToMulterFile(
-        createEventInput.image,
-      );
-      imageUrl = await this.uploadService.handleUpload(multerFile);
+    this.logger.log('Uploading image...');
+    let imageUrl: string;
+    try {
+      imageUrl = await this.uploadService.handleUpload(image);
+      this.logger.log(`Image uploaded successfully: ${imageUrl}`);
+    } catch (error) {
+      this.logger.error('Error during image upload', error);
+      throw new BadRequestException('Image upload failed');
     }
 
     return this.prismaService.event.create({
@@ -44,8 +55,8 @@ export class EventsService {
       where: { id: eventId },
       include: {
         tickets: true,
-        ticketTypes: true
-      }
+        ticketTypes: true,
+      },
     });
   }
 

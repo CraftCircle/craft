@@ -35,22 +35,3 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 }
 
-// @Injectable()
-// export class GqlAuthGuard extends AuthGuard('jwt') {
-//   getRequest(context: ExecutionContext) {
-//     const ctx = GqlExecutionContext.create(context);
-//     return ctx.getContext().req;
-//   }
-// }
-
-// @Injectable()
-// export class GqlLocalAuthGuard extends AuthGuard('local') {
-//   getRequest(context: any) {
-//     const gqlExecutionContext = GqlExecutionContext.create(context);
-//     const gqlContext = gqlExecutionContext.getContext();
-//     const gqlArgs = gqlExecutionContext.getArgs();
-
-//     gqlContext.req.body = { ...gqlContext.req.body, ...gqlArgs };
-//     return gqlContext.req;
-//   }
-// }

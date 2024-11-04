@@ -12,9 +12,8 @@ export class UploadService {
   private readonly logger = new Logger(UploadService.name);
 
   async handleUpload(
-    file: Express.Multer.File,
+    file: FileUpload | Express.Multer.File,
     retryCount = 3,
-    // mediaType: 'image' | 'video',
   ): Promise<string> {
     this.logger.log('Starting file upload process');
 
@@ -23,35 +22,38 @@ export class UploadService {
       throw new BadRequestException('File must be provided');
     }
 
+    // Convert FileUpload to Express.Multer.File if necessary
+    const multerFile =
+      'createReadStream' in file ? await this.convertToMulterFile(file) : file;
+
+    // Log multerFile properties to check buffer integrity
+    this.logger.log(
+      `multerFile properties: ${JSON.stringify(
+        {
+          originalname: multerFile.originalname,
+          mimetype: multerFile.mimetype,
+          size: multerFile.size,
+          bufferLength: multerFile.buffer
+            ? multerFile.buffer.length
+            : 'No buffer',
+        },
+        null,
+        2,
+      )}`,
+    );
+
     for (let attempt = 1; attempt <= retryCount; attempt++) {
       this.logger.log(`Upload attempt ${attempt} of ${retryCount}`);
 
       try {
-        const result = await this.uploadToCloudinary(file);
+        const result = await this.uploadToCloudinary(multerFile);
         this.logger.log(`File uploaded successfully on attempt ${attempt}`);
         return result.secure_url;
       } catch (error) {
-        if (error instanceof AggregateError) {
-          this.logger.error(
-            'AggregateError encountered during upload. Details:',
-          );
-          error.errors.forEach((subError, index) => {
-            this.logger.error(`Sub-error ${index + 1}: ${subError.message}`);
-            if (subError.stack) {
-              this.logger.error(
-                `Stack trace for sub-error ${index + 1}: ${subError.stack}`,
-              );
-            }
-          });
-        } else {
-          this.logger.error(`Upload attempt ${attempt} failed`, error.message);
-        }
-
-        if (attempt < retryCount) {
-          await this.delay(1000 * attempt);
-          this.logger.log(
-            `Retrying upload in ${(1000 * attempt) / 1000} seconds...`,
-          );
+        if (error.code === 'ETIMEDOUT' && attempt < retryCount) {
+          const delay = Math.pow(2, attempt) * 10000;
+          this.logger.log(`Retrying upload in ${delay / 1000} seconds...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
         } else {
           this.logger.error(
             'Cloudinary upload error after maximum retries:',
@@ -68,14 +70,22 @@ export class UploadService {
 
   private async uploadToCloudinary(
     file: Express.Multer.File,
-    // mediaType: 'image' | 'video',
   ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { resource_type: 'auto', timeout: 120000, upload_preset: 'aaqqgb0o' },
+        { resource_type: 'image', timeout: 600000, upload_preset: 'aaqqgb0o' },
         (error, result) => {
           if (error) {
-            this.logger.error('Cloudinary upload error:', error.message);
+            this.logger.error('Cloudinary upload error:', {
+              code: error.code,
+              message: error.message || 'No message provided',
+              attempt: 'attempt details here',
+            });
+
+            this.logger.error(
+              'Full Error Details:',
+              JSON.stringify(error, null, 2),
+            );
             reject(error);
           } else {
             resolve(result as UploadApiResponse);
@@ -84,6 +94,12 @@ export class UploadService {
       );
 
       try {
+        if (!file.buffer || file.buffer.length === 0) {
+          this.logger.error('File buffer is empty or missing.');
+          throw new BadRequestException('File buffer is empty or missing.');
+        }
+
+        // Pipe the buffer to Cloudinary upload stream
         streamifier.createReadStream(file.buffer).pipe(uploadStream);
       } catch (error) {
         this.logger.error(
@@ -99,6 +115,7 @@ export class UploadService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  // Convert GraphQL FileUpload to Express.Multer.File format
   async convertToMulterFile(
     fileUpload: FileUpload,
   ): Promise<Express.Multer.File> {
@@ -115,25 +132,5 @@ export class UploadService {
       mimetype: fileUpload.mimetype,
       size: buffer.length,
     } as Express.Multer.File;
-  }
-
-  async uploadFiles(files: Express.Multer.File[]): Promise<string[]> {
-    return Promise.all(files.map((file) => this.handleUpload(file, 3)));
-  }
-
-  async uploadFileFromUrl(
-    url: string,
-  ): Promise<UploadApiResponse | UploadApiErrorResponse> {
-    this.logger.log(`Uploading file from URL: ${url}`);
-    return cloudinary.uploader.upload(url);
-  }
-
-  async uploadFilesFromUrl(urls: string[]): Promise<string[]> {
-    return Promise.all(
-      urls.map(async (url) => {
-        const { secure_url } = await this.uploadFileFromUrl(url);
-        return secure_url;
-      }),
-    );
   }
 }

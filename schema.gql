@@ -6,7 +6,7 @@ input CreateEventInput {
   date: DateTime!
   description: String!
   endTime: DateTime!
-  image: Upload!
+  image: Upload
   location: String!
   name: String!
   startTime: DateTime!
@@ -70,8 +70,15 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Event {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  creatorId: String!
+  date: DateTime!
+  description: String!
+  endTime: DateTime!
+  id: ID!
+  image: Upload!
+  location: String!
+  name: String!
+  startTime: DateTime!
 }
 
 input LoginRequestDTO {
@@ -85,7 +92,7 @@ type LoginResponseDTO {
 
 type Mutation {
   changeUserRole(id: String!, newRole: Role!): UserEntity!
-  createEvent(createEventInput: CreateEventInput!): Event!
+  createEvent(createEventInput: CreateEventInput!, image: Upload!): Event!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   createPayment(createPaymentInput: CreatePaymentInput!): Payment!
   createPost(audio: Upload, createPostInput: CreatePostInput!, image: Upload, video: Upload): PostEntity!
@@ -129,6 +136,7 @@ type PostEntity {
 }
 
 type Query {
+  event(id: String!): Event!
   events: [Event!]!
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!

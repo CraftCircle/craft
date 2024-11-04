@@ -55,8 +55,9 @@ export class PostResolver {
 
         const imageUploadResult = await this.uploadService.handleUpload(
           {
+  
             buffer: fileBuffer,
-            originalname: filename,
+            originalname: filename, 
           } as Express.Multer.File,
           3,
           // 'image',
