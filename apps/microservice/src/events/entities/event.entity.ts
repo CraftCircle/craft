@@ -1,5 +1,4 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { FileUpload, GraphQLUpload } from 'graphql-upload-minimal';
 
 @ObjectType()
 export class Event {
@@ -24,8 +23,8 @@ export class Event {
   @Field()
   location: string;
 
-  @Field(() => GraphQLUpload) 
-  image: FileUpload;
+  @Field() 
+  image: string;
 
   @Field()
   creatorId: string;

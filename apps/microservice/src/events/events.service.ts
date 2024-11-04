@@ -4,6 +4,7 @@ import { CreateEventInput } from './dto/create-event.input';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { FileUpload } from 'graphql-upload-minimal';
+import { UpdateEventInput } from './dto/update-event.input';
 
 @Injectable()
 export class EventsService {
@@ -16,7 +17,7 @@ export class EventsService {
   async create(
     createEventInput: CreateEventInput,
     creatorId: string,
-    image: FileUpload
+    image: FileUpload,
   ) {
     if (!image) {
       throw new BadRequestException('Image is required for event creation');
@@ -37,6 +38,32 @@ export class EventsService {
         ...createEventInput,
         image: imageUrl,
         creatorId,
+      },
+    });
+  }
+
+  async update(
+    id: string,
+    updateEventInput: UpdateEventInput,
+    image?: FileUpload,
+  ) {
+    let imageUrl: string | undefined;
+    if (image) {
+      this.logger.log('Uploading new image...');
+      try {
+        imageUrl = await this.uploadService.handleUpload(image);
+        this.logger.log(`Image uploaded successfully: ${imageUrl}`);
+      } catch (error) {
+        this.logger.error('Error during image upload', error);
+        throw new BadRequestException('Image upload failed');
+      }
+    }
+
+    return this.prismaService.event.update({
+      where: { id },
+      data: {
+        ...updateEventInput,
+        ...(imageUrl && { image: imageUrl }),
       },
     });
   }
@@ -69,5 +96,15 @@ export class EventsService {
         // User: true, // Optional, include if you want to show creator details
       },
     });
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prismaService.event.delete({ where: { id } });
+      return true;
+    } catch (error) {
+      this.logger.error('Error deleting event', error);
+      throw new BadRequestException('Failed to delete event');
+    }
   }
 }
