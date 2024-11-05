@@ -18,8 +18,8 @@ export class TicketEntity {
   @Field()
   name: string;
 
-  @Field()
-  phoneNumber: string;
+  @Field({ nullable: true})
+  phoneNumber?: string;
 
   @Field()
   email: string;

@@ -32,6 +32,7 @@ input CreatePostInput {
 
 input CreateTicketPurchaseDTO {
   eventId: String!
+  name: String
   quantity: Int!
   ticketTypeId: String!
   transactionId: String!
@@ -91,17 +92,19 @@ type LoginResponseDTO {
 }
 
 type Mutation {
+  CreateTicket(createTicketTypeDTO: CreateTicketTypeDTO!): TicketEntity!
+  DeleteTickets(ticketId: String!): Boolean!
+  PurchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketEntity!
+  UpdateTicketTypeQuantity(quantity: Int!, ticketId: String!): TicketEntity!
   changeUserRole(id: String!, newRole: Role!): UserEntity!
   createEvent(createEventInput: CreateEventInput!, image: Upload!): Event!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   createPayment(createPaymentInput: CreatePaymentInput!): Payment!
   createPost(audio: Upload, createPostInput: CreatePostInput!, image: Upload, video: Upload): PostEntity!
-  createTicketType(createTicketTypeDTO: CreateTicketTypeDTO!): TicketEntity!
   createUser(createUserInput: CreateUserInput!): UserEntity!
   deleteEvent(id: String!): Boolean!
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
   multipleUpload(files: [Upload!]!): [String!]!
-  purchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketEntity!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
   removeNotification(id: Int!): Notification!
   removePayment(id: Int!): Payment!
@@ -138,8 +141,10 @@ type PostEntity {
 }
 
 type Query {
+  AllTickets: [TicketEntity!]!
   Event(id: String!): Event!
   Events: [Event!]!
+  TicketsForAnEvent(eventId: String!): [TicketEntity!]!
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!
   notification(id: Int!): Notification!
@@ -175,7 +180,7 @@ type TicketEntity {
   email: String!
   eventId: String!
   name: String!
-  phoneNumber: String!
+  phoneNumber: String
   price: Float!
   quantity: Int!
   ticketType: TicketTypeEnum!

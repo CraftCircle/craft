@@ -16,7 +16,7 @@ export class TicketsResolver {
   constructor(private readonly ticketsService: TicketsService) {}
 
   // Mutation for Admins to create ticket types for an event
-  @Mutation(() => TicketEntity)
+  @Mutation(() => TicketEntity ,{ name: 'CreateTicket' })
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   createTicketType(
@@ -25,8 +25,9 @@ export class TicketsResolver {
   ) {
     return this.ticketsService.createTicketType(createTicketTypeDTO, admin);
   }
-  // Mutation to purchase a ticket, with user details passed from CurrentUser
-  @Mutation(() => TicketEntity)
+
+  // Mutation to purchase a ticket, available to authenticated users
+  @Mutation(() => TicketEntity , { name: 'PurchaseTicket' })
   @UseGuards(JwtAuthGuard)
   async purchaseTicket(
     @Args('createTicketPurchaseDTO')
@@ -35,4 +36,38 @@ export class TicketsResolver {
   ) {
     return this.ticketsService.purchaseTicket(createTicketPurchaseDTO, user);
   }
-}
+
+   // Query for users to view all tickets for a specific event
+   @Query(() => [TicketEntity], { name: 'TicketsForAnEvent' })
+   async findTicketsForEvent(@Args('eventId', { type: () => String }) eventId: string) {
+     return this.ticketsService.getTicketsForEvent(eventId);
+   }
+ 
+   // Query for admins to view all tickets
+   @Query(() => [TicketEntity], { name: 'AllTickets' })
+   @Roles(Role.ADMIN)
+   @UseGuards(JwtAuthGuard, RolesGuard)
+   async findAllTickets() {
+     return this.ticketsService.getAllTickets();
+   }
+ 
+   // Mutation for admins to update a ticket
+   @Mutation(() => TicketEntity,  { name: 'UpdateTicketTypeQuantity' })
+   @Roles(Role.ADMIN)
+   @UseGuards(JwtAuthGuard, RolesGuard)
+   async updateTicket(
+     @Args('ticketId', { type: () => String }) ticketId: string,
+     @Args('quantity', { type: () => Int }) quantity: number,
+     @CurrentUser() admin: UserEntity
+   ) {
+     return this.ticketsService.updateTicketTypeQuantity(ticketId, quantity, admin);
+   }
+ 
+   // Mutation for admins to delete a ticket
+   @Mutation(() => Boolean,  { name: 'DeleteTickets' })
+   @Roles(Role.ADMIN)
+   @UseGuards(JwtAuthGuard, RolesGuard)
+   async deleteTicket(@Args('ticketId', { type: () => String }) ticketId: string) {
+     return this.ticketsService.deleteTicket(ticketId);
+   }
+ }

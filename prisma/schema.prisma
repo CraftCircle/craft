@@ -47,7 +47,7 @@ model Event {
 model Ticket {
   id            String         @id @default(uuid()) @map("_id")
   name          String
-  phoneNumber   String
+  phoneNumber   String?
   email         String
   price         Float
   ticketType    TicketTypeEnum
