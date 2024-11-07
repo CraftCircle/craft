@@ -1,6 +1,20 @@
-
-version: '3.8'
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: api
+      DB_PASSWORD: apipassword
+      DB_NAME: api-db
+      NODE_ENV: production
+      DATABASE_URL: postgres://api:apipassword@postgres:5432/
 
   postgres:
     image: postgres:13.5
