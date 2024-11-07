@@ -17,9 +17,14 @@ input CreateNotificationInput {
   exampleField: Int!
 }
 
+type CreatePaymentAuth {
+  access_token: String!
+}
+
 input CreatePaymentInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  accountReference: String!
+  amount: Float!
+  phoneNumber: String!
 }
 
 input CreatePostInput {
@@ -99,7 +104,7 @@ type Mutation {
   changeUserRole(id: String!, newRole: Role!): UserEntity!
   createEvent(createEventInput: CreateEventInput!, image: Upload!): Event!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
-  createPayment(createPaymentInput: CreatePaymentInput!): Payment!
+  createPayment(createPaymentInput: CreatePaymentInput!): CreatePaymentAuth!
   createPost(audio: Upload, createPostInput: CreatePostInput!, image: Upload, video: Upload): PostEntity!
   createUser(createUserInput: CreateUserInput!): UserEntity!
   deleteEvent(id: String!): Boolean!
@@ -107,23 +112,16 @@ type Mutation {
   multipleUpload(files: [Upload!]!): [String!]!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
   removeNotification(id: Int!): Notification!
-  removePayment(id: Int!): Payment!
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
   singleUpload(file: Upload!): String!
   updateEvent(id: String!, image: Upload, updateEventInput: UpdateEventInput!): Event!
   updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
-  updatePayment(updatePaymentInput: UpdatePaymentInput!): Payment!
   updatePost(updatePostInput: UpdatePostInput!): PostEntity!
   updateUser(email: String!, updateUserInput: UpdateUserDto!): UserEntity!
 }
 
 type Notification {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-type Payment {
   """Example field (placeholder)"""
   exampleField: Int!
 }
@@ -149,8 +147,6 @@ type Query {
   findOne(email: String!): UserEntity!
   notification(id: Int!): Notification!
   notifications: [Notification!]!
-  payment(id: Int!): Payment!
-  payments: [Payment!]!
   post(id: String!): PostEntity!
   posts: [PostEntity!]!
   whoAmI: UserEntity!
@@ -205,12 +201,6 @@ input UpdateEventInput {
 }
 
 input UpdateNotificationInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input UpdatePaymentInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!

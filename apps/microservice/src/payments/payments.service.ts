@@ -1,28 +1,123 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { CreatePaymentAuth } from './dto/payment.auth';
+import { firstValueFrom } from 'rxjs';
+import moment from 'moment';
 import { CreatePaymentInput } from './dto/create-payment.input';
-import { UpdatePaymentInput } from './dto/update-payment.input';
 
 @Injectable()
 export class PaymentsService {
-  async verifyPayment(
-    transactionId: string
-  ) {
+  private readonly logger = new Logger(PaymentsService.name);
+
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  async verifyPayment(transactionId: string) {
     return 'This action adds a new payment';
   }
 
-  findAll() {
-    return `This action returns all payments`;
+  async getAccessToken(): Promise<string> {
+    const consumerKey = this.configService.get<string>('MPESA_CONSUMER_KEY');
+    const consumerSecret = this.configService.get<string>(
+      'MPESA_CONSUMER_SECRET',
+    );
+    const credentials = Buffer.from(
+      `${consumerKey}:${consumerSecret}`,
+    ).toString('base64');
+
+    const url =
+      this.configService.get<string>('MPESA_ENVIRONMENT') === 'sandbox'
+        ? 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
+        : 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get<CreatePaymentAuth>(url, {
+          headers: {
+            Authorization: `Basic ${credentials}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+      );
+
+      const { access_token, expires_in } = response.data;
+
+      this.logger.log(
+        `Access Token fetched successfully, expires in ${expires_in} seconds`,
+      );
+      return access_token;
+    } catch (error) {
+      this.logger.error('Failed to fetch access token');
+      throw new Error('Failed to get access token');
+    }
+  }
+  async initiateStkPush(
+    phoneNumber: string,
+    amount: number,
+    accountReference: string,
+  ) {
+    const shortCode = this.configService.get<string>('MPESA_SHORTCODE');
+    const passKey = this.configService.get<string>('MPESA_PASSKEY');
+    const timestamp = moment().format('YYYYMMDDHHmmss');
+    const password = Buffer.from(`${shortCode}${passKey}${timestamp}`).toString(
+      'base64',
+    );
+
+    const token = await this.getAccessToken();
+    const url =
+      this.configService.get<string>('MPESA_ENVIRONMENT') === 'sandbox'
+        ? 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
+        : 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+
+    const payload = {
+      BusinessShortCode: shortCode,
+      Password: password,
+      Timestamp: timestamp,
+      TransactionType: 'CustomerBuyGoodsOnline',
+      Amount: '1',
+      PartyA: phoneNumber,
+      PartyB: shortCode,
+      PhoneNumber: phoneNumber,
+      CallBackURL: 'http://localhost:3000/callbackurl',
+      AccountReference: accountReference,
+      TransactionDesc: 'Ticket Purchase',
+    };
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(url, payload, { headers }),
+      );
+
+      this.logger.log('STK Push initiated', response.data);
+      return response.data;
+    } catch (error) {
+      this.logger.error('Failed to initiate STK Push');
+      throw new Error('STK Push initiation failed');
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} payment`;
-  }
+  async createPayment(createPaymentInput: CreatePaymentInput) {
+    const { phoneNumber, amount, accountReference } = createPaymentInput;
 
-  update(id: number, updatePaymentInput: UpdatePaymentInput) {
-    return `This action updates a #${id} payment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} payment`;
+    try {
+      const response = await this.initiateStkPush(
+        phoneNumber,
+        amount,
+        accountReference,
+      );
+      this.logger.log(`Payment initiated successfully for ${phoneNumber}`);
+      return response;
+    } catch (error) {
+      this.logger.error(`Failed to initiate payment for ${phoneNumber}`);
+      throw new Error('Payment initiation failed');
+    }
   }
 }

@@ -1,7 +1,13 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql';
 
 @InputType()
 export class CreatePaymentInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field()
+  phoneNumber: string;
+
+  @Field()
+  amount: number;
+
+  @Field()
+  accountReference: string;
 }
