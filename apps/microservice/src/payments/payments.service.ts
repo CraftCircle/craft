@@ -29,9 +29,10 @@ export class PaymentsService {
     ).toString('base64');
 
     const url =
-      this.configService.get<string>('MPESA_ENVIRONMENT') === 'sandbox'
-        ? 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
-        : 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+      'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+    // this.configService.get<string>('MPESA_ENVIRONMENT') === 'sandbox'
+    //   ? 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
+    //   : 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
 
     try {
       const response = await firstValueFrom(
@@ -56,7 +57,7 @@ export class PaymentsService {
   }
   async initiateStkPush(
     phoneNumber: string,
-    amount: number,
+    amount: string,
     accountReference: string,
   ) {
     const shortCode = this.configService.get<string>('MPESA_SHORTCODE');
@@ -67,23 +68,26 @@ export class PaymentsService {
     );
 
     const token = await this.getAccessToken();
+
     const url =
-      this.configService.get<string>('MPESA_ENVIRONMENT') === 'sandbox'
-        ? 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
-        : 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+      'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+
+    // this.configService.get<string>('MPESA_ENVIRONMENT') === 'sandbox'
+    //   ? 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
+    //   : 'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
 
     const payload = {
       BusinessShortCode: shortCode,
       Password: password,
       Timestamp: timestamp,
-      TransactionType: 'CustomerBuyGoodsOnline',
+      TransactionType: 'CustomerPayBillOnline',
       Amount: '1',
-      PartyA: phoneNumber,
+      PartyA: '254725552554',
       PartyB: shortCode,
-      PhoneNumber: phoneNumber,
-      CallBackURL: 'http://localhost:3000/callbackurl',
-      AccountReference: accountReference,
-      TransactionDesc: 'Ticket Purchase',
+      PhoneNumber: '254725552554',
+      CallBackURL: 'https://craft-vnrj.onrender.com/callback',
+      AccountReference: 'CRAFTCIRCLEPAY',
+      TransactionDesc: 'MPESA TEST',
     };
 
     const headers = {

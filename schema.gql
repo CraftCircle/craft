@@ -23,7 +23,7 @@ type CreatePaymentAuth {
 
 input CreatePaymentInput {
   accountReference: String!
-  amount: Float!
+  amount: String!
   phoneNumber: String!
 }
 

@@ -6,7 +6,7 @@ export class CreatePaymentInput {
   phoneNumber: string;
 
   @Field()
-  amount: number;
+  amount: string;
 
   @Field()
   accountReference: string;
