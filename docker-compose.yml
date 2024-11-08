@@ -14,7 +14,7 @@ services:
       DB_PASSWORD: apipassword
       DB_NAME: api-db
       NODE_ENV: production
-      DATABASE_URL: postgres://api:apipassword@postgres:5432/
+      DATABASE_URL: postgres://api:apipassword@postgres:5432/api-db
 
   postgres:
     image: postgres:13.5
