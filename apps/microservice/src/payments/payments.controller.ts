@@ -8,6 +8,35 @@ export class PaymentsController {
 
   constructor(private readonly paymentsService: PaymentsService) {}
 
+  @Post('register-urls')
+  async registerUrls(@Res() res: Response) {
+    try {
+      const result = await this.paymentsService.registerUrl();
+      return res.json(result);
+    } catch (error) {
+      return res.status(500).json({ message: 'URL registration failed' });
+    }
+  }
+
+  @Post('validation')
+  async handleValidation(@Body() validationData: any, @Res() res: Response) {
+    this.logger.log('Validation request received');
+    // Process validationData and respond with acceptance or rejection
+    const response = { ResultCode: '0', ResultDesc: 'Accepted' }; // Accept by default
+    return res.json(response);
+  }
+
+  @Post('confirmation')
+  async handleConfirmation(
+    @Body() confirmationData: any,
+    @Res() res: Response,
+  ) {
+    this.logger.log('Confirmation request received');
+    // Process confirmationData and store transaction details if needed
+    const response = { ResultCode: '0', ResultDesc: 'Success' }; // Always confirm success
+    return res.json(response);
+  }
+
   @Post('callback')
   async handleCallback(@Body() callbackData: any, @Res() res: Response) {
     this.logger.log('Received callback data', callbackData); // Log incoming callback data

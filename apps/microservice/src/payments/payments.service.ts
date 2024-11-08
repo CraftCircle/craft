@@ -81,10 +81,10 @@ export class PaymentsService {
       Password: password,
       Timestamp: timestamp,
       TransactionType: 'CustomerPayBillOnline',
-      Amount: '1',
+      Amount: amount,
       PartyA: '254725552554',
       PartyB: shortCode,
-      PhoneNumber: '254725552554',
+      PhoneNumber: phoneNumber,
       CallBackURL: 'https://craft-vnrj.onrender.com/payments/callback',
       AccountReference: 'CRAFTCIRCLEPAY',
       TransactionDesc: 'MPESA TEST',
@@ -108,8 +108,6 @@ export class PaymentsService {
     }
   }
 
-
-
   async createPayment(
     createPaymentInput: CreatePaymentInput,
   ): Promise<CreatePaymentAuth> {
@@ -118,11 +116,7 @@ export class PaymentsService {
     const accessToken = await this.getAccessToken();
 
     try {
-      const response = await this.initiateStkPush(
-        phoneNumber,
-        amount,
-        accountReference,
-      );
+      await this.initiateStkPush(phoneNumber, amount, accountReference);
       this.logger.log(`Payment initiated successfully for ${phoneNumber}`);
       return {
         access_token: accessToken,
@@ -134,11 +128,41 @@ export class PaymentsService {
     }
   }
 
+  async registerUrl() {
+    const token = await this.getAccessToken();
+    const shortCode = this.configService.get<string>('MPESA_SHORTCODE');
+    const responseType = 'Completed';
+
+    const url = 'https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl';
+    const payload = {
+      ShortCode: shortCode,
+      ResponseType: responseType,
+      ConfirmationURL: 'https://craft-vnrj.onrender.com/payments/confirmation',
+      ValidationURL: 'https://craft-vnrj.onrender.com/payments/validation',
+    };
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(url, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+      );
+      this.logger.log(
+        `URL Registration successful: ${JSON.stringify(response.data)}`,
+      );
+      return response.data;
+    } catch (error) {
+      this.logger.error('URL Registration failed');
+      throw new Error('URL registration failed');
+    }
+  }
 
   async processCallback(callbackData: any) {
     const resultCode = callbackData.Body.stkCallback.ResultCode;
     const resultDesc = callbackData.Body.stkCallback.ResultDesc;
-
 
     if (resultCode !== 0) {
       this.logger.warn(`Transaction failed: ${resultDesc}`);
@@ -146,13 +170,24 @@ export class PaymentsService {
     }
 
     // Extract transaction details for successful transactions
-    const callbackMetadata = callbackData.Body.stkCallback.CallbackMetadata.Item;
-    const amount = callbackMetadata.find((item: { Name: string; }) => item.Name === 'Amount')?.Value;
-    const mpesaReceiptNumber = callbackMetadata.find((item: { Name: string; }) => item.Name === 'MpesaReceiptNumber')?.Value;
-    const phoneNumber = callbackMetadata.find((item: { Name: string; }) => item.Name === 'PhoneNumber')?.Value;
-    const transactionDate = callbackMetadata.find((item: { Name: string; }) => item.Name === 'TransactionDate')?.Value;
+    const callbackMetadata =
+      callbackData.Body.stkCallback.CallbackMetadata.Item;
+    const amount = callbackMetadata.find(
+      (item: { Name: string }) => item.Name === 'Amount',
+    )?.Value;
+    const mpesaReceiptNumber = callbackMetadata.find(
+      (item: { Name: string }) => item.Name === 'MpesaReceiptNumber',
+    )?.Value;
+    const phoneNumber = callbackMetadata.find(
+      (item: { Name: string }) => item.Name === 'PhoneNumber',
+    )?.Value;
+    const transactionDate = callbackMetadata.find(
+      (item: { Name: string }) => item.Name === 'TransactionDate',
+    )?.Value;
 
-    this.logger.log(`Transaction Successful: Amount ${amount}, Mpesa Code ${mpesaReceiptNumber}, Phone ${phoneNumber}`);
+    this.logger.log(
+      `Transaction Successful: Amount ${amount}, Mpesa Code ${mpesaReceiptNumber}, Phone ${phoneNumber}`,
+    );
 
     // Here, you could save the transaction details to the database or trigger other services
     return {

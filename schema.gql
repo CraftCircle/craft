@@ -17,17 +17,6 @@ input CreateNotificationInput {
   exampleField: Int!
 }
 
-type CreatePaymentAuth {
-  access_token: String
-  expires_in: String!
-}
-
-input CreatePaymentInput {
-  accountReference: String!
-  amount: String!
-  phoneNumber: String!
-}
-
 input CreatePostInput {
   audio: String
   content: String!
@@ -105,13 +94,13 @@ type Mutation {
   changeUserRole(id: String!, newRole: Role!): UserEntity!
   createEvent(createEventInput: CreateEventInput!, image: Upload!): Event!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
-  createPayment(createPaymentInput: CreatePaymentInput!): CreatePaymentAuth!
   createPost(audio: Upload, createPostInput: CreatePostInput!, image: Upload, video: Upload): PostEntity!
   createUser(createUserInput: CreateUserInput!): UserEntity!
   deleteEvent(id: String!): Boolean!
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
   multipleUpload(files: [Upload!]!): [String!]!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
+  registerUrl: String!
   removeNotification(id: Int!): Notification!
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
