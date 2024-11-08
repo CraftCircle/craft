@@ -85,7 +85,7 @@ export class PaymentsService {
       PartyA: '254725552554',
       PartyB: shortCode,
       PhoneNumber: '254725552554',
-      CallBackURL: 'https://craft-vnrj.onrender.com/callback',
+      CallBackURL: 'https://craft-vnrj.onrender.com/payments/callback',
       AccountReference: 'CRAFTCIRCLEPAY',
       TransactionDesc: 'MPESA TEST',
     };
@@ -107,6 +107,8 @@ export class PaymentsService {
       throw new Error('STK Push initiation failed');
     }
   }
+
+
 
   async createPayment(
     createPaymentInput: CreatePaymentInput,
@@ -130,5 +132,36 @@ export class PaymentsService {
       this.logger.error(`Failed to initiate payment for ${phoneNumber}`);
       throw new Error('Payment initiation failed');
     }
+  }
+
+
+  async processCallback(callbackData: any) {
+    const resultCode = callbackData.Body.stkCallback.ResultCode;
+    const resultDesc = callbackData.Body.stkCallback.ResultDesc;
+
+
+    if (resultCode !== 0) {
+      this.logger.warn(`Transaction failed: ${resultDesc}`);
+      return { ResultCode: resultCode, ResultDesc: resultDesc };
+    }
+
+    // Extract transaction details for successful transactions
+    const callbackMetadata = callbackData.Body.stkCallback.CallbackMetadata.Item;
+    const amount = callbackMetadata.find((item: { Name: string; }) => item.Name === 'Amount')?.Value;
+    const mpesaReceiptNumber = callbackMetadata.find((item: { Name: string; }) => item.Name === 'MpesaReceiptNumber')?.Value;
+    const phoneNumber = callbackMetadata.find((item: { Name: string; }) => item.Name === 'PhoneNumber')?.Value;
+    const transactionDate = callbackMetadata.find((item: { Name: string; }) => item.Name === 'TransactionDate')?.Value;
+
+    this.logger.log(`Transaction Successful: Amount ${amount}, Mpesa Code ${mpesaReceiptNumber}, Phone ${phoneNumber}`);
+
+    // Here, you could save the transaction details to the database or trigger other services
+    return {
+      ResultCode: resultCode,
+      ResultDesc: resultDesc,
+      Amount: amount,
+      MpesaReceiptNumber: mpesaReceiptNumber,
+      PhoneNumber: phoneNumber,
+      TransactionDate: transactionDate,
+    };
   }
 }
