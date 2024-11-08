@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Logger, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { PaymentsService } from './payments.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('payments')
 export class PaymentsController {
@@ -19,6 +20,7 @@ export class PaymentsController {
   }
 
   @Post('validation')
+  @Public()
   async handleValidation(@Body() validationData: any, @Res() res: Response) {
     this.logger.log('Validation request received');
     // Process validationData and respond with acceptance or rejection
@@ -27,6 +29,7 @@ export class PaymentsController {
   }
 
   @Post('confirmation')
+  @Public()
   async handleConfirmation(
     @Body() confirmationData: any,
     @Res() res: Response,
@@ -38,6 +41,7 @@ export class PaymentsController {
   }
 
   @Post('callback')
+  @Public()
   async handleCallback(@Body() callbackData: any, @Res() res: Response) {
     this.logger.log('Received callback data', callbackData); // Log incoming callback data
 
