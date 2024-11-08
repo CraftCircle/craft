@@ -18,7 +18,8 @@ input CreateNotificationInput {
 }
 
 type CreatePaymentAuth {
-  access_token: String!
+  access_token: String
+  expires_in: String!
 }
 
 input CreatePaymentInput {

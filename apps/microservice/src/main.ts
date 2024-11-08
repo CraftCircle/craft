@@ -7,7 +7,9 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'error', 'warn', 'debug', 'verbose'], 
+    logger: ['log', 'error', 'warn', 
+      // 'debug', 'verbose'
+    ], 
   });
 
   // Set up global validation pipe for input validation and logging

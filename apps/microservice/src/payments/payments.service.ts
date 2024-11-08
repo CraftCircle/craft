@@ -108,8 +108,12 @@ export class PaymentsService {
     }
   }
 
-  async createPayment(createPaymentInput: CreatePaymentInput) {
+  async createPayment(
+    createPaymentInput: CreatePaymentInput,
+  ): Promise<CreatePaymentAuth> {
     const { phoneNumber, amount, accountReference } = createPaymentInput;
+
+    const accessToken = await this.getAccessToken();
 
     try {
       const response = await this.initiateStkPush(
@@ -118,7 +122,10 @@ export class PaymentsService {
         accountReference,
       );
       this.logger.log(`Payment initiated successfully for ${phoneNumber}`);
-      return response;
+      return {
+        access_token: accessToken,
+        expires_in: '3599',
+      };
     } catch (error) {
       this.logger.error(`Failed to initiate payment for ${phoneNumber}`);
       throw new Error('Payment initiation failed');
