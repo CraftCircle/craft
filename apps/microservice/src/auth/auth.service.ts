@@ -5,10 +5,10 @@ import { UserEntity } from '../../src/users/entities/user.entity';
 import { UserService } from '../../src/users/users.service';
 import { RegisterRequestDTO } from '../../src/auth/dto/register-request.dto';
 import { Role } from '@prisma/client';
-import { Profile } from 'passport-google-oauth20';
 import { LoginRequestDTO } from './dto/login-request.dto';
 import { LoginResponseDTO } from './dto/login-response.dto';
 import { RegisterResponseDTO } from './dto/register-response.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
@@ -17,6 +17,7 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   /**
@@ -34,6 +35,13 @@ export class AuthService {
     if (!isMatch) {
       throw new BadRequestException('Invalid credentials');
     }
+
+    const loginTime = new Date().toISOString();
+    // await this.notificationService.sendLoginNotification(
+    //   user.email,
+    //   user.name,
+    //   loginTime,
+    // );
 
     return user;
   }
@@ -80,6 +88,11 @@ export class AuthService {
       id: newUser.id,
       role: newUser.role,
     });
+
+    // await this.notificationService.sendRegistrationNotification(
+    //   newUser.email,
+    //   newUser.name,
+    // );
 
     return { access_token: token };
   }

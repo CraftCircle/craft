@@ -10,6 +10,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { UserModule } from '../users/users.module';
 import { RolesGuard } from './guards/roles.guard';
 import { JwtAuthGuard } from './guards/jwt.guard';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { JwtAuthGuard } from './guards/jwt.guard';
   ],
   controllers: [AuthController],
   providers: [AuthService, 
+    NotificationsService,
     JwtAuthGuard,    
     RolesGuard, 
     JwtStrategy

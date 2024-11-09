@@ -26,7 +26,6 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PaymentsController } from './payments/payments.controller';
 import { PaymentsResolver } from './payments/payments.resolver';
-
 @Module({
   imports: [
     PrismaModule,

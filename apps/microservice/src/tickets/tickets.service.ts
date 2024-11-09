@@ -137,7 +137,7 @@ export class TicketsService {
       const ticket = await this.prisma.ticket.create({
         data: {
           name,
-          phoneNumber: user.phoneNumber || null ,
+          phoneNumber: user.phoneNumber || null,
           email: user.email,
           price: ticketType.price,
           ticketType: ticketType.ticketType,
@@ -149,8 +149,18 @@ export class TicketsService {
         },
       });
 
+      // Populate the event name to pass to the notification
+      const event = await this.prisma.event.findUnique({
+        where: { id: eventId },
+      });
+
+      const notificationData = {
+        ...ticket,
+        eventName: event?.name,
+      };
+
       // Send notification to the user
-      await this.notificationService.sendTicketNotification(ticket);
+      await this.notificationService.sendTicketNotification(notificationData);
       this.logger.log(`Ticket purchase successful for user: ${user.email}`);
       return ticket;
     } catch (error) {
