@@ -17,6 +17,12 @@ input CreateNotificationInput {
   exampleField: Int!
 }
 
+input CreateOrderInput {
+  productId: String!
+  quantity: Int!
+  userId: String!
+}
+
 type CreatePaymentAuth {
   access_token: String
   expires_in: String!
@@ -34,6 +40,13 @@ input CreatePostInput {
   image: String
   title: String!
   video: String
+}
+
+input CreateProductInput {
+  description: String!
+  name: String!
+  price: Float!
+  stock: Int!
 }
 
 input CreateTicketPurchaseDTO {
@@ -105,25 +118,36 @@ type Mutation {
   changeUserRole(id: String!, newRole: Role!): UserEntity!
   createEvent(createEventInput: CreateEventInput!, image: Upload!): Event!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
+  createOrder(createOrderInput: CreateOrderInput!): Order!
   createPayment(createPaymentInput: CreatePaymentInput!): CreatePaymentAuth!
   createPost(audio: Upload, createPostInput: CreatePostInput!, image: Upload, video: Upload): PostEntity!
+  createProduct(createProductInput: CreateProductInput!): Product!
   createUser(createUserInput: CreateUserInput!): UserEntity!
   deleteEvent(id: String!): Boolean!
+  deleteProduct(id: String!): Product!
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
   multipleUpload(files: [Upload!]!): [String!]!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
   registerUrl: String!
   removeNotification(id: Int!): Notification!
+  removeOrder(id: String!): Boolean!
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
   singleUpload(file: Upload!): String!
   updateEvent(id: String!, image: Upload, updateEventInput: UpdateEventInput!): Event!
   updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
+  updateOrder(id: String!, status: String!): Order!
   updatePost(updatePostInput: UpdatePostInput!): PostEntity!
+  updateProduct(updateProductInput: UpdateProductInput!): Product!
   updateUser(email: String!, updateUserInput: UpdateUserDto!): UserEntity!
 }
 
 type Notification {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Order {
   """Example field (placeholder)"""
   exampleField: Int!
 }
@@ -140,6 +164,11 @@ type PostEntity {
   video: String!
 }
 
+type Product {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
 type Query {
   AllTickets: [TicketEntity!]!
   Event(id: String!): Event!
@@ -149,8 +178,12 @@ type Query {
   findOne(email: String!): UserEntity!
   notification(id: Int!): Notification!
   notifications: [Notification!]!
+  order(id: String!): Order!
+  orders: [Order!]!
   post(id: String!): PostEntity!
   posts: [PostEntity!]!
+  product(id: String!): Product!
+  products: [Product!]!
   whoAmI: UserEntity!
 }
 
@@ -215,6 +248,14 @@ input UpdatePostInput {
   image: String
   title: String
   video: String
+}
+
+input UpdateProductInput {
+  description: String
+  id: String!
+  name: String
+  price: Float
+  stock: Int
 }
 
 input UpdateUserDto {

@@ -75,7 +75,7 @@ export class NotificationsService {
     sendSmtpEmail.params = params;
 
     try {
-      const response = await this.emailApi.sendTransacEmail(sendSmtpEmail);
+      await this.emailApi.sendTransacEmail(sendSmtpEmail);
       this.logger.log(`Email sent successfully to ${toEmail}`);
     } catch (error) {
       this.logger.error(`Failed to send email to ${toEmail}: ${error.message}`);

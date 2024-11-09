@@ -8,19 +8,21 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid()) @map("_id")
-  email       String   @unique
+  id          String    @id @default(uuid()) @map("_id")
+  email       String    @unique
   password    String?
-  provider    String   @default("email")
+  provider    String    @default("email")
   providerId  String?
   name        String
   phoneNumber String?
-  role        Role     @default(USER)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  role        Role      @default(USER)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   post        Post[]
   event       Event[]
   ticket      Ticket[]
+  product     Product[]
+  order       Order[]
 }
 
 enum Role {
@@ -76,6 +78,40 @@ model TicketType {
   event      Event          @relation(fields: [eventId], references: [id])
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  stock       Int
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  order       Order[]  @relation("ProductOrders")
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  productId   String
+  quantity    Int
+  status      OrderStatus @default(PENDING)
+  totalAmount Float
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  product     Product     @relation("ProductOrders", fields: [productId], references: [id])
+  User        User        @relation(fields: [userId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELED
 }
 
 model Post {

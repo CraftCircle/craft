@@ -26,6 +26,8 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PaymentsController } from './payments/payments.controller';
 import { PaymentsResolver } from './payments/payments.resolver';
+import { ProductsModule } from './products/products.module';
+import { OrdersModule } from './orders/orders.module';
 @Module({
   imports: [
     PrismaModule,
@@ -72,6 +74,8 @@ import { PaymentsResolver } from './payments/payments.resolver';
     TicketsModule,
     PaymentsModule,
     NotificationsModule,
+    ProductsModule,
+    OrdersModule,
   ],
   controllers: [AppController, PaymentsController],
   providers: [
