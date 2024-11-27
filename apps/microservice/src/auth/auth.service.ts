@@ -58,6 +58,13 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
     };
   }
 
@@ -94,6 +101,14 @@ export class AuthService {
     //   newUser.name,
     // );
 
-    return { access_token: token };
+    return { access_token: token ,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+        createdAt: newUser.createdAt,
+      },
+    };
   }
 }

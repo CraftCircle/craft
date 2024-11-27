@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { EventsService } from './events.service';
-import { Event } from './entities/event.entity';
+import { EventEntity } from './entities/event.entity';
 import { CreateEventInput } from './dto/create-event.input';
 import { Role } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -12,11 +12,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-minimal';
 import { UpdateEventInput } from './dto/update-event.input';
 
-@Resolver(() => Event)
+@Resolver(() => EventEntity)
 export class EventsResolver {
   constructor(private readonly eventsService: EventsService) {}
 
-  @Mutation(() => Event)
+  @Mutation(() => EventEntity)
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   createEvent(
@@ -27,16 +27,16 @@ export class EventsResolver {
     return this.eventsService.create(createEventInput, admin.id, image);
   }
 
-  @Query(() => [Event], { name: 'Events' })
+  @Query(() => [EventEntity], { name: 'Events' })
   findAll() {
     return this.eventsService.getAllEvents();
   }
-  @Query(() => Event, { name: 'Event' })
+  @Query(() => EventEntity, { name: 'EventEntity' })
   async findOne(@Args('id', { type: () => String }) id: string) {
     return this.eventsService.getEventById(id);
   }
   // Mutation to update an event by ID
-  @Mutation(() => Event)
+  @Mutation(() => EventEntity)
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async updateEvent(

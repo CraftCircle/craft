@@ -89,7 +89,7 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type Event {
+type EventEntity {
   creatorId: String!
   date: DateTime!
   description: String!
@@ -108,6 +108,7 @@ input LoginRequestDTO {
 
 type LoginResponseDTO {
   access_token: String!
+  user: UserEntity!
 }
 
 type Mutation {
@@ -116,7 +117,7 @@ type Mutation {
   PurchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketEntity!
   UpdateTicketTypeQuantity(quantity: Int!, ticketId: String!): TicketEntity!
   changeUserRole(id: String!, newRole: Role!): UserEntity!
-  createEvent(createEventInput: CreateEventInput!, image: Upload!): Event!
+  createEvent(createEventInput: CreateEventInput!, image: Upload!): EventEntity!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   createOrder(createOrderInput: CreateOrderInput!): Order!
   createPayment(createPaymentInput: CreatePaymentInput!): CreatePaymentAuth!
@@ -134,7 +135,7 @@ type Mutation {
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
   singleUpload(file: Upload!): String!
-  updateEvent(id: String!, image: Upload, updateEventInput: UpdateEventInput!): Event!
+  updateEvent(id: String!, image: Upload, updateEventInput: UpdateEventInput!): EventEntity!
   updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
   updateOrder(id: String!, status: String!): Order!
   updatePost(updatePostInput: UpdatePostInput!): PostEntity!
@@ -171,8 +172,8 @@ type Product {
 
 type Query {
   AllTickets: [TicketEntity!]!
-  Event(id: String!): Event!
-  Events: [Event!]!
+  EventEntity(id: String!): EventEntity!
+  Events: [EventEntity!]!
   TicketsForAnEvent(eventId: String!): [TicketEntity!]!
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!
@@ -198,6 +199,7 @@ input RegisterRequestDTO {
 
 type RegisterResponseDTO {
   access_token: String!
+  user: UserEntity!
 }
 
 """The roles a user can have"""
