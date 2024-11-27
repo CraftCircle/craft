@@ -517,6 +517,14 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.57.1.tgz#de633db3ec2ef6a3c89e2f19038063e8a122e2c2"
   integrity sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==
 
+"@graphql-codegen/add@^3.2.1":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@graphql-codegen/add/-/add-3.2.3.tgz#f1ecee085987e7c21841edc4b1fd48877c663e1a"
+  integrity sha512-sQOnWpMko4JLeykwyjFTxnhqjd/3NOG2OyMuvK76Wnnwh8DRrNf2VEs2kmSvLl7MndMlOj7Kh5U154dVcvhmKQ==
+  dependencies:
+    "@graphql-codegen/plugin-helpers" "^3.1.1"
+    tslib "~2.4.0"
+
 "@graphql-codegen/add@^5.0.3":
   version "5.0.3"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/add/-/add-5.0.3.tgz#1ede6bac9a93661ed7fa5808b203d079e1b1d215"
@@ -566,7 +574,7 @@
     yaml "^2.3.1"
     yargs "^17.0.0"
 
-"@graphql-codegen/client-preset@^4.4.0":
+"@graphql-codegen/client-preset@4.5.1", "@graphql-codegen/client-preset@^4.4.0":
   version "4.5.1"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/client-preset/-/client-preset-4.5.1.tgz#7cb6405e26a73f67e88aa1815e28dfd3e28f2fad"
   integrity sha512-UE2/Kz2eaxv35HIXFwlm2QwoUH77am6+qp54aeEWYq+T+WPwmIc6+YzqtGiT/VcaXgoOUSgidREGm9R6jKcf9g==
@@ -606,6 +614,18 @@
     auto-bind "~4.0.0"
     tslib "~2.6.0"
 
+"@graphql-codegen/near-operation-file-preset@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@graphql-codegen/near-operation-file-preset/-/near-operation-file-preset-3.0.0.tgz#f294df4b4cf5a565aecfdbb5de281b5852594879"
+  integrity sha512-HRPaa7OsIAHQBFeGiTUVdjFcxzgvAs7uxSqcLEJgDpCr9cffpwnlgWP3gK79KnTiHsRkyb55U1K4YyrL00g1Cw==
+  dependencies:
+    "@graphql-codegen/add" "^3.2.1"
+    "@graphql-codegen/plugin-helpers" "^3.0.0"
+    "@graphql-codegen/visitor-plugin-common" "2.13.1"
+    "@graphql-tools/utils" "^10.0.0"
+    parse-filepath "^1.0.2"
+    tslib "~2.6.0"
+
 "@graphql-codegen/plugin-helpers@^2.7.2":
   version "2.7.2"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/plugin-helpers/-/plugin-helpers-2.7.2.tgz#6544f739d725441c826a8af6a49519f588ff9bed"
@@ -618,7 +638,7 @@
     lodash "~4.17.0"
     tslib "~2.4.0"
 
-"@graphql-codegen/plugin-helpers@^3.0.0":
+"@graphql-codegen/plugin-helpers@^3.0.0", "@graphql-codegen/plugin-helpers@^3.1.1":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/plugin-helpers/-/plugin-helpers-3.1.2.tgz#69a2e91178f478ea6849846ade0a59a844d34389"
   integrity sha512-emOQiHyIliVOIjKVKdsI5MXj312zmRDwmHpyUTZMjfpvxq/UVAHUJIVdVf+lnjjrI+LXBTgMlTWTgHQfmICxjg==
@@ -3390,6 +3410,11 @@ jose@^5.0.0:
   resolved "https://registry.yarnpkg.com/jose/-/jose-5.9.6.tgz#77f1f901d88ebdc405e57cce08d2a91f47521883"
   integrity sha512-AMlnetc9+CV9asI19zHmrgS/WYsWUwCn2R7RzlbJWD7F9eWYUTGyBmU9o6PxngtLGOiDGPRu+Uc4fhKzbpteZQ==
 
+js-cookie@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/js-cookie/-/js-cookie-3.0.5.tgz#0b7e2fd0c01552c58ba86e0841f94dc2557dcdbc"
+  integrity sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -3644,6 +3669,13 @@ natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
+
+next-client-cookies@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/next-client-cookies/-/next-client-cookies-2.0.0.tgz#efb3e9051a16953c8b6279b4aaee1b0745fb280f"
+  integrity sha512-Ooqt7gqs+Gs1c4Gp1SKVMElzHn291+KenYDy4GZSrmeOiVKHN9QrbLswkjjioF1tenytSKhbu6Bu/JlQ+/HL7w==
+  dependencies:
+    js-cookie "^3.0.5"
 
 next@15.0.3:
   version "15.0.3"

@@ -1,0 +1,13 @@
+mutation Register($registerInput: RegisterRequestDTO!) {
+  register(registerInput: $registerInput) {
+    access_token
+    user {
+      id
+      email
+      name
+      role
+      createdAt
+    }
+  }
+}
+
