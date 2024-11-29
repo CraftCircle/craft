@@ -1,0 +1,12 @@
+mutation CreateEvent($createEventInput: CreateEventInput!, $image: Upload!, ) {
+  createEvent(createEventInput: $createEventInput, image: $image) {
+    date
+    creatorId
+    description
+    endTime
+    location
+    name
+    startTime
+    
+  }
+}

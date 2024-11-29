@@ -1,0 +1,13 @@
+mutation UpdateEvent($updateEventId: String!, $updateEventInput: UpdateEventInput!, $image: Upload) {
+  updateEvent(id: $updateEventId, updateEventInput: $updateEventInput, image: $image) {
+     creatorId
+     date
+     description
+     image
+     location
+     name
+     startTime
+     endTime
+     
+  }
+}
