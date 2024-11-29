@@ -1,12 +1,12 @@
 mutation Login($loginInput: LoginRequestDTO!) {
   login(loginInput: $loginInput) {
     access_token
-  }
-  user {
-    createdAt
-    id
-    email
-    name
-    role
+    user {
+      createdAt
+      id
+      email
+      name
+      role
+    }
   }
 }

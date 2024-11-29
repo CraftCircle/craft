@@ -115,6 +115,7 @@ export type LoginRequestDto = {
 export type LoginResponseDto = {
   __typename?: 'LoginResponseDTO';
   access_token: Scalars['String']['output'];
+  user: UserEntity;
 };
 
 export type Mutation = {
@@ -397,6 +398,7 @@ export type RegisterRequestDto = {
 export type RegisterResponseDto = {
   __typename?: 'RegisterResponseDTO';
   access_token: Scalars['String']['output'];
+  user: UserEntity;
 };
 
 /** The roles a user can have */
