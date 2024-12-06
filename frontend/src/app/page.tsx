@@ -1,95 +1,59 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    <main
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh", // Full viewport height
+        padding: "1rem",
+        textAlign: "center",
+        boxSizing: "border-box",
+      }}
+    >
+      <h1
+        style={{
+          fontSize: "clamp(2rem, 5vw, 4rem)", // Responsive font size
+          marginBottom: "1rem",
+        }}
+      >
+        Welcome to CraftCircle
+      </h1>
+      <p
+        style={{
+          fontSize: "clamp(1rem, 3vw, 1.5rem)", // Responsive font size
+          marginBottom: "2rem",
+          maxWidth: "600px",
+          lineHeight: "1.5",
+        }}
+      >
+        Your platform for crafting amazing experiences. Connect, create, and
+        share like never before.
+      </p>
+      <button
+        style={{
+          padding: "0.75rem 1.5rem",
+          backgroundColor: "#0070f3",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          fontSize: "1rem",
+          cursor: "pointer",
+          transition: "background-color 0.3s ease",
+        }}
+        onClick={() => alert("You clicked the button!")}
+        onMouseOver={(e) =>
+          (e.currentTarget.style.backgroundColor = "#005bb5")
+        }
+        onMouseOut={(e) =>
+          (e.currentTarget.style.backgroundColor = "#0070f3")
+        }
+      >
+        Get Started
+      </button>
+    </main>
   );
 }
