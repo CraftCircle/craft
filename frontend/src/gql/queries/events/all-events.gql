@@ -1,0 +1,13 @@
+query Events {
+  Events {
+    creatorId
+    date
+    description
+    endTime
+    id
+    image
+    location
+    name
+    startTime
+  }
+}

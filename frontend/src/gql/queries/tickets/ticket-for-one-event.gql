@@ -1,0 +1,12 @@
+query TicketsForAnEvent($eventId: String!) {
+  TicketsForAnEvent(eventId: $eventId) {
+    email
+    eventId
+    name
+    phoneNumber
+    price
+    quantity
+    ticketType
+    transactionId
+  }
+}

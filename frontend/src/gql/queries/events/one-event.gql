@@ -1,0 +1,13 @@
+query EventEntity($eventEntityId: String!) {
+  EventEntity(id: $eventEntityId) {
+    creatorId
+    date
+    description
+    endTime
+    id
+    image
+    location
+    name
+    startTime
+  }
+}

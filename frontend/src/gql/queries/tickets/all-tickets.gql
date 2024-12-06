@@ -1,0 +1,12 @@
+query AllTickets {
+  AllTickets {
+    email
+    eventId
+    name
+    phoneNumber
+    price
+    quantity
+    ticketType
+    transactionId
+  }
+}

@@ -1,0 +1,14 @@
+query FindOne($email: String!) {
+  findOne(email: $email) {
+    createdAt
+    email
+    id
+    name
+    password
+    phoneNumber
+    provider
+    providerId
+    role
+    updatedAt
+  }
+}

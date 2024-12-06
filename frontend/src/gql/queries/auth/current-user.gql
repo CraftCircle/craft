@@ -1,0 +1,14 @@
+query WhoAmI {
+  whoAmI {
+    createdAt
+    email
+    id
+    name
+    password
+    phoneNumber
+    provider
+    providerId
+    role
+    updatedAt
+  }
+}
