@@ -18,6 +18,8 @@ const documents = {
     "mutation Register($registerInput: RegisterRequestDTO!) {\n  register(registerInput: $registerInput) {\n    access_token\n    user {\n      id\n      email\n      name\n      role\n      createdAt\n    }\n  }\n}": types.RegisterDocument,
     "mutation CreateEvent($createEventInput: CreateEventInput!, $image: Upload!) {\n  createEvent(createEventInput: $createEventInput, image: $image) {\n    date\n    creatorId\n    description\n    endTime\n    location\n    name\n    startTime\n  }\n}": types.CreateEventDocument,
     "mutation UpdateEvent($updateEventId: String!, $updateEventInput: UpdateEventInput!, $image: Upload) {\n  updateEvent(\n    id: $updateEventId\n    updateEventInput: $updateEventInput\n    image: $image\n  ) {\n    creatorId\n    date\n    description\n    image\n    location\n    name\n    startTime\n    endTime\n  }\n}": types.UpdateEventDocument,
+    "mutation Mutation($createTicketTypeDto: CreateTicketTypeDTO!) {\n  CreateTicket(createTicketTypeDTO: $createTicketTypeDto) {\n    email\n    eventId\n    name\n    phoneNumber\n    price\n    quantity\n    ticketType\n    transactionId\n  }\n}": types.MutationDocument,
+    "mutation UpdateTicketTypeQuantity($quantity: Int!, $ticketId: String!) {\n  UpdateTicketTypeQuantity(quantity: $quantity, ticketId: $ticketId) {\n    email\n    eventId\n    name\n    phoneNumber\n    price\n    quantity\n    ticketType\n    transactionId\n  }\n}": types.UpdateTicketTypeQuantityDocument,
 };
 
 /**
@@ -50,6 +52,14 @@ export function graphql(source: "mutation CreateEvent($createEventInput: CreateE
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "mutation UpdateEvent($updateEventId: String!, $updateEventInput: UpdateEventInput!, $image: Upload) {\n  updateEvent(\n    id: $updateEventId\n    updateEventInput: $updateEventInput\n    image: $image\n  ) {\n    creatorId\n    date\n    description\n    image\n    location\n    name\n    startTime\n    endTime\n  }\n}"): (typeof documents)["mutation UpdateEvent($updateEventId: String!, $updateEventInput: UpdateEventInput!, $image: Upload) {\n  updateEvent(\n    id: $updateEventId\n    updateEventInput: $updateEventInput\n    image: $image\n  ) {\n    creatorId\n    date\n    description\n    image\n    location\n    name\n    startTime\n    endTime\n  }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation Mutation($createTicketTypeDto: CreateTicketTypeDTO!) {\n  CreateTicket(createTicketTypeDTO: $createTicketTypeDto) {\n    email\n    eventId\n    name\n    phoneNumber\n    price\n    quantity\n    ticketType\n    transactionId\n  }\n}"): (typeof documents)["mutation Mutation($createTicketTypeDto: CreateTicketTypeDTO!) {\n  CreateTicket(createTicketTypeDTO: $createTicketTypeDto) {\n    email\n    eventId\n    name\n    phoneNumber\n    price\n    quantity\n    ticketType\n    transactionId\n  }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation UpdateTicketTypeQuantity($quantity: Int!, $ticketId: String!) {\n  UpdateTicketTypeQuantity(quantity: $quantity, ticketId: $ticketId) {\n    email\n    eventId\n    name\n    phoneNumber\n    price\n    quantity\n    ticketType\n    transactionId\n  }\n}"): (typeof documents)["mutation UpdateTicketTypeQuantity($quantity: Int!, $ticketId: String!) {\n  UpdateTicketTypeQuantity(quantity: $quantity, ticketId: $ticketId) {\n    email\n    eventId\n    name\n    phoneNumber\n    price\n    quantity\n    ticketType\n    transactionId\n  }\n}"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

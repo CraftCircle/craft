@@ -1,0 +1,12 @@
+mutation UpdateTicketTypeQuantity($quantity: Int!, $ticketId: String!) {
+  UpdateTicketTypeQuantity(quantity: $quantity, ticketId: $ticketId) {
+    email
+    eventId
+    name
+    phoneNumber
+    price
+    quantity
+    ticketType
+    transactionId
+  }
+}
