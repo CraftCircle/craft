@@ -11,12 +11,12 @@
   },
   "dependencies": {
     "@apollo/client": "^3.11.10",
-    "@graphql-codegen/cli": "^5.0.3",
     "@graphql-codegen/near-operation-file-preset": "^3.0.0",
     "@graphql-codegen/typed-document-node": "^5.0.12",
     "@graphql-codegen/typescript": "^4.1.2",
     "@graphql-codegen/typescript-operations": "^4.4.0",
     "@graphql-codegen/typescript-react-apollo": "^4.3.2",
+    "avm": "^0.0.200002",
     "graphql": "^16.9.0",
     "next": "15.0.3",
     "next-client-cookies": "^2.0.0",
@@ -26,10 +26,10 @@
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.3",
     "@graphql-codegen/client-preset": "4.5.1",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
+    "@types/node": "^22.10.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9.16",
     "eslint-config-next": "15.0.3",
     "typescript": "^5"
   }

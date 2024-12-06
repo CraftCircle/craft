@@ -1,4 +1,4 @@
-import * as Types from '@/gql/generated/users/types';
+import * as Types from '@/gql/generated/graphql';
 
 import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type RegisterMutationVariables = Types.Exact<{
