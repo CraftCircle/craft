@@ -91,6 +91,7 @@ export class TicketsService {
     }
 
     let ticketType: TicketType;
+
     try {
       // Log for debugging
       this.logger.log(`Looking for ticket type with ID: ${ticketTypeId}`);
@@ -117,11 +118,20 @@ export class TicketsService {
         throw new BadRequestException('Not enough tickets available');
       }
 
-      // Update ticket type quantity to reflect the purchase
+      
       await this.prisma.ticketType.update({
         where: { id: ticketTypeId },
-        data: { quantity: ticketType.quantity - quantity },
+        data: {
+          quantity: {
+            decrement: quantity, 
+          },
+        },
       });
+
+      // Log successful update
+      this.logger.log(
+        `Successfully decremented ticket type quantity by ${quantity}`,
+      );
     } catch (error) {
       this.logger.error(
         'Error during ticket availability check:',
