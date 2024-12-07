@@ -17,6 +17,9 @@ export class TicketTypeEntity {
   quantity: number;
 
   @Field()
+  image: string;
+
+  @Field()
   eventId: string;
 
   @Field(() => EventEntity)

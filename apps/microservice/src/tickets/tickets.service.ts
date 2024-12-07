@@ -12,6 +12,8 @@ import { CreateTicketPurchaseDTO } from './dto/create-ticket-purchase.dto';
 import { UserEntity } from '../users/entities/user.entity';
 import { TicketType as PrismaTicketType, TicketType } from '@prisma/client';
 import { Logger } from '@nestjs/common';
+import { FileUpload } from 'graphql-upload-minimal';
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class TicketsService {
@@ -20,6 +22,7 @@ export class TicketsService {
     private prisma: PrismaService,
     private paymentService: PaymentsService,
     private notificationService: NotificationsService,
+    private uploadService: UploadService,
   ) {}
 
   /**
@@ -28,8 +31,23 @@ export class TicketsService {
   async createTicketType(
     createTicketTypeDto: CreateTicketTypeDTO,
     admin: UserEntity,
+    image: FileUpload,
   ) {
     const { ticketType, price, quantity, eventId } = createTicketTypeDto;
+
+    if (!image) {
+      throw new BadRequestException('Image is required for event creation');
+    }
+
+    this.logger.log('Uploading image...');
+    let imageUrl: string;
+    try {
+      imageUrl = await this.uploadService.handleUpload(image);
+      this.logger.log(`Image uploaded successfully: ${imageUrl}`);
+    } catch (error) {
+      this.logger.error('Error during image upload', error);
+      throw new BadRequestException('Image upload failed');
+    }
 
     try {
       // Ensure the event exists
@@ -53,6 +71,7 @@ export class TicketsService {
           ticketType,
           price,
           quantity,
+          image: imageUrl,
           event: {
             connect: { id: eventId },
           },
@@ -118,12 +137,11 @@ export class TicketsService {
         throw new BadRequestException('Not enough tickets available');
       }
 
-      
       await this.prisma.ticketType.update({
         where: { id: ticketTypeId },
         data: {
           quantity: {
-            decrement: quantity, 
+            decrement: quantity,
           },
         },
       });
@@ -141,8 +159,14 @@ export class TicketsService {
         'Ticket availability check failed',
       );
     }
-
     try {
+      // Fetch event image for the ticket
+      const event = await this.prisma.event.findUnique({
+        where: { id: eventId },
+      });
+
+     
+
       // Create a user-specific ticket
       const ticket = await this.prisma.ticket.create({
         data: {
@@ -157,11 +181,6 @@ export class TicketsService {
           user: { connect: { id: user.id } },
           scanned: false,
         },
-      });
-
-      // Populate the event name to pass to the notification
-      const event = await this.prisma.event.findUnique({
-        where: { id: eventId },
       });
 
       const notificationData = {

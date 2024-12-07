@@ -1,5 +1,6 @@
 import { InputType, Field, Float, Int, registerEnumType } from '@nestjs/graphql';
 import { TicketTypeEnum } from '@prisma/client';
+import { FileUpload, GraphQLUpload } from 'graphql-upload-minimal';
 
 
 
@@ -15,6 +16,10 @@ export class CreateTicketTypeDTO {
 
   @Field(() => Float)
   price: number;
+
+
+  @Field(() => GraphQLUpload, { nullable: true })
+  image?: FileUpload;
 
   @Field(() => Int)
   quantity: number;

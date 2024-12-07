@@ -59,6 +59,7 @@ input CreateTicketPurchaseDTO {
 
 input CreateTicketTypeDTO {
   eventId: String!
+  image: Upload
   price: Float!
   quantity: Int!
   ticketType: TicketTypeEnum!
@@ -112,7 +113,7 @@ type LoginResponseDTO {
 }
 
 type Mutation {
-  CreateTicket(createTicketTypeDTO: CreateTicketTypeDTO!): TicketEntity!
+  CreateTicket(createTicketTypeDTO: CreateTicketTypeDTO!, image: Upload!): TicketEntity!
   DeleteTickets(ticketId: String!): Boolean!
   PurchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketEntity!
   UpdateTicketTypeQuantity(quantity: Int!, ticketId: String!): TicketEntity!

@@ -10,6 +10,7 @@ import { CreateTicketTypeDTO } from './dto/create-ticket-type.dto';
 import { CreateTicketPurchaseDTO } from './dto/create-ticket-purchase.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../users/entities/user.entity';
+import { FileUpload, GraphQLUpload } from 'graphql-upload-minimal';
 
 @Resolver(() => TicketEntity)
 export class TicketsResolver {
@@ -21,9 +22,10 @@ export class TicketsResolver {
   @UseGuards(JwtAuthGuard, RolesGuard)
   createTicketType(
     @Args('createTicketTypeDTO') createTicketTypeDTO: CreateTicketTypeDTO,
+    @Args({ name: 'image', type: () => GraphQLUpload }) image: FileUpload,
     @CurrentUser() admin: UserEntity,
   ) {
-    return this.ticketsService.createTicketType(createTicketTypeDTO, admin);
+    return this.ticketsService.createTicketType(createTicketTypeDTO, admin, image);
   }
 
   // Mutation to purchase a ticket, available to authenticated users

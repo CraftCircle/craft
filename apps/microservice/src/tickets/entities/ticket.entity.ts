@@ -7,7 +7,6 @@ import {
 } from '@nestjs/graphql';
 import { TicketTypeEnum } from '@prisma/client';
 
-
 registerEnumType(TicketTypeEnum, {
   name: 'TicketTypeEnum',
   description: 'The type of ticket',
@@ -18,7 +17,7 @@ export class TicketEntity {
   @Field()
   name: string;
 
-  @Field({ nullable: true})
+  @Field({ nullable: true })
   phoneNumber?: string;
 
   @Field()
@@ -29,6 +28,8 @@ export class TicketEntity {
 
   @Field(() => Int)
   quantity: number;
+
+
 
   @Field(() => TicketTypeEnum)
   ticketType: TicketTypeEnum;
