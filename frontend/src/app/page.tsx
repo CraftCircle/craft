@@ -8,7 +8,7 @@ export default function HomePage() {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        height: "100vh", // Full viewport height
+        height: "100vh", 
         padding: "1rem",
         textAlign: "center",
         boxSizing: "border-box",
@@ -16,7 +16,7 @@ export default function HomePage() {
     >
       <h1
         style={{
-          fontSize: "clamp(2rem, 5vw, 4rem)", // Responsive font size
+          fontSize: "clamp(2rem, 5vw, 4rem)", 
           marginBottom: "1rem",
         }}
       >
@@ -24,7 +24,7 @@ export default function HomePage() {
       </h1>
       <p
         style={{
-          fontSize: "clamp(1rem, 3vw, 1.5rem)", // Responsive font size
+          fontSize: "clamp(1rem, 3vw, 1.5rem)", 
           marginBottom: "2rem",
           maxWidth: "600px",
           lineHeight: "1.5",
