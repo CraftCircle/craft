@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CreateNotificationInput } from './dto/create-notification.input';
 import { UpdateNotificationInput } from './dto/update-notification.input';
 import * as nodemailer from 'nodemailer';
-import { CreateTicketDto } from '../tickets/dto/create-ticket.input';
 import * as Brevo from '@getbrevo/brevo';
 
 import { ConfigService } from '@nestjs/config';

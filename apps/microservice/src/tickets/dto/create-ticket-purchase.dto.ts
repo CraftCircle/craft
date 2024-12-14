@@ -14,6 +14,9 @@ export class CreateTicketPurchaseDTO {
   @Field()
   eventId: string; // ID of the Event associated with the ticket
 
+  @Field(() => String, { nullable: true }) 
+  eventName?: string; // Name of the event for better user experience
+
   @Field({ nullable: true }) //Name of the user purchasing the ticket
   name?: string;
 }

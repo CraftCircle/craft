@@ -14,6 +14,9 @@ import { TicketType as PrismaTicketType, TicketType } from '@prisma/client';
 import { Logger } from '@nestjs/common';
 import { FileUpload } from 'graphql-upload-minimal';
 import { UploadService } from '../upload/upload.service';
+import { TicketCreatedEntity } from './entities/ticket-created.entity';
+import { TicketPurchasedEntity } from './entities/ticket-purchased.entity';
+import { TicketEntity } from './entities/ticket.entity';
 
 @Injectable()
 export class TicketsService {
@@ -26,13 +29,18 @@ export class TicketsService {
   ) {}
 
   /**
-   * Admin creates a ticket type for an Event
+   * Creates a new ticket type for an event.
+   *
+   * @param createTicketTypeDto - Details of the ticket type to create.
+   * @param admin - The authenticated admin creating the ticket type.
+   * @param image - The image file for the ticket type.
+   * @returns The created ticket type entity.
    */
   async createTicketType(
     createTicketTypeDto: CreateTicketTypeDTO,
     admin: UserEntity,
     image: FileUpload,
-  ) {
+  ): Promise<TicketCreatedEntity> {
     const { ticketType, price, quantity, eventId } = createTicketTypeDto;
 
     if (!image) {
@@ -50,31 +58,27 @@ export class TicketsService {
     }
 
     try {
-      // Ensure the event exists
+      // Validate that the event exists and is owned by the admin.
       const event = await this.prisma.event.findUnique({
         where: { id: eventId },
       });
       if (!event) {
         throw new BadRequestException('Event not found');
       }
-
-      // Ensure that the authenticated admin is the creator of the event
       if (event.creatorId !== admin.id) {
         throw new ForbiddenException(
           'You are not authorized to create ticket types for this event',
         );
       }
 
-      // Create a ticket type for the event
+      // Create the ticket type.
       return await this.prisma.ticketType.create({
         data: {
           ticketType,
           price,
           quantity,
           image: imageUrl,
-          event: {
-            connect: { id: eventId },
-          },
+          event: { connect: { id: eventId } },
         },
       });
     } catch (error) {
@@ -83,21 +87,23 @@ export class TicketsService {
   }
 
   /**
-   * User purchases a ticket for an Event
+   * Processes the purchase of a ticket by a user.
+   *
+   * @param createTicketPurchaseDto - Details of the ticket purchase.
+   * @param user - The authenticated user making the purchase.
+   * @returns The purchased ticket entity.
    */
   async purchaseTicket(
     createTicketPurchaseDto: CreateTicketPurchaseDTO,
     user: UserEntity,
-  ) {
+  ): Promise<TicketPurchasedEntity> {
     const { ticketTypeId, quantity, transactionId, eventId, name } =
       createTicketPurchaseDto;
 
-    // Temporary bypass for payment verification if not implemented
+    // Optionally verify payment.
     const skipPaymentVerification = true;
-
     if (!skipPaymentVerification) {
       try {
-        // Verify payment
         const paymentVerified =
           await this.paymentService.verifyPayment(transactionId);
         if (!paymentVerified) {
@@ -110,69 +116,37 @@ export class TicketsService {
     }
 
     let ticketType: TicketType;
-
     try {
-      // Log for debugging
-      this.logger.log(`Looking for ticket type with ID: ${ticketTypeId}`);
-
-      // Check ticket type availability
+      // Ensure the ticket type exists and has sufficient quantity.
       ticketType = await this.prisma.ticketType.findUnique({
         where: { id: ticketTypeId },
       });
-
-      // Check if the ticket type was found
       if (!ticketType) {
-        this.logger.warn(`Ticket type with ID ${ticketTypeId} not found.`);
         throw new BadRequestException('Ticket type not found');
       }
-
-      // Log ticket type details for debugging
-      this.logger.log(`Found ticket type: ${JSON.stringify(ticketType)}`);
-
-      // Check if enough tickets are available
       if (ticketType.quantity < quantity) {
-        this.logger.warn(
-          `Requested quantity (${quantity}) exceeds available tickets (${ticketType.quantity})`,
-        );
         throw new BadRequestException('Not enough tickets available');
       }
 
+      // Update the ticket type's quantity.
       await this.prisma.ticketType.update({
         where: { id: ticketTypeId },
-        data: {
-          quantity: {
-            decrement: quantity,
-          },
-        },
+        data: { quantity: { decrement: quantity } },
       });
-
-      // Log successful update
-      this.logger.log(
-        `Successfully decremented ticket type quantity by ${quantity}`,
-      );
     } catch (error) {
       this.logger.error(
-        'Error during ticket availability check:',
+        'Error during ticket availability check',
         error.message,
       );
       throw new InternalServerErrorException(
         'Ticket availability check failed',
       );
     }
+
     try {
-      // Fetch event image for the ticket
-      const event = await this.prisma.event.findUnique({
-        where: { id: eventId },
-      });
-
-     
-
-      // Create a user-specific ticket
+      // Create and save the ticket.
       const ticket = await this.prisma.ticket.create({
         data: {
-          name,
-          phoneNumber: user.phoneNumber || null,
-          email: user.email,
           price: ticketType.price,
           ticketType: ticketType.ticketType,
           transactionId,
@@ -183,13 +157,15 @@ export class TicketsService {
         },
       });
 
+      // Send a notification to the user about the ticket purchase.
       const notificationData = {
         ...ticket,
-        eventName: event?.name,
+        eventName: (
+          await this.prisma.event.findUnique({ where: { id: eventId } })
+        )?.name,
       };
-
-      // Send notification to the user
       await this.notificationService.sendTicketNotification(notificationData);
+
       this.logger.log(`Ticket purchase successful for user: ${user.email}`);
       return ticket;
     } catch (error) {
@@ -200,69 +176,155 @@ export class TicketsService {
     }
   }
 
-  // Get all tickets for a specific event
-  async getTicketsForEvent(eventId: string) {
-    return await this.prisma.ticket.findMany({ where: { eventId } });
+  /**
+   * Retrieves tickets for a specific event for the authenticated user.
+   *
+   * @param userId - The ID of the user.
+   * @param eventId - The ID of the event.
+   * @returns An array of purchased ticket entities.
+   */
+  async getUserTicketsForEvent(
+    userId: string,
+    eventId: string,
+  ): Promise<TicketPurchasedEntity[]> {
+    return this.prisma.ticket.findMany({
+      where: { eventId, userId },
+      include: { event: true, user: true },
+    });
   }
 
-  // Admin retrieves all tickets
-  async getAllTickets() {
-    return await this.prisma.ticket.findMany();
+  /**
+   * Retrieves a specific ticket by its ID for the authenticated user.
+   *
+   * @param ticketId - The ID of the ticket.
+   * @param userId - The ID of the user.
+   * @returns The ticket entity.
+   */
+  async getTicketById(ticketId: string, userId: string): Promise<TicketEntity> {
+    return this.prisma.ticket.findUnique({
+      where: { id: ticketId, userId },
+      include: { event: true, user: true },
+    });
   }
 
-  // Method to allow admin to update ticket type quantity
+  /**
+   * Retrieves all tickets purchased by the authenticated user.
+   *
+   * @param userId - The ID of the user.
+   * @returns An array of purchased ticket entities.
+   */
+  async getAllTicketsForUser(userId: string): Promise<TicketPurchasedEntity[]> {
+    return this.prisma.ticket.findMany({
+      where: { userId },
+      include: { event: true },
+    });
+  }
+
+  /**
+   * Retrieves all tickets for events created by the authenticated admin.
+   *
+   * @param admin - The authenticated admin.
+   * @returns An array of ticket type entities.
+   */
+  async getAllTickets(admin: UserEntity): Promise<TicketCreatedEntity[]> {
+    return this.prisma.ticketType.findMany({
+      where: { event: { creatorId: admin.id } },
+      include: { event: true },
+    });
+  }
+
+  /**
+   * Retrieves all ticket types for a specific event.
+   *
+   * @param eventId - The ID of the event.
+   * @returns An array of ticket type entities.
+   */
+  async getTicketsForEvent(eventId: string): Promise<TicketCreatedEntity[]> {
+    return this.prisma.ticketType.findMany({
+      where: { eventId },
+      include: { event: true },
+    });
+  }
+
+  /**
+   * Marks a ticket as scanned.
+   *
+   * @param ticketId - The ID of the ticket.
+   * @param userId - The ID of the user scanning the ticket.
+   * @returns The updated ticket entity.
+   */
+  async scanTicket(ticketId: string, userId: string): Promise<TicketEntity> {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id: ticketId },
+      include: { event: true, user: true },
+    });
+
+    if (!ticket) {
+      throw new Error('Ticket not found.');
+    }
+    if (ticket.userId !== userId) {
+      throw new Error('You are not authorized to scan this ticket.');
+    }
+    if (ticket.scanned) {
+      throw new Error('Ticket has already been scanned.');
+    }
+
+    return this.prisma.ticket.update({
+      where: { id: ticketId },
+      data: { scanned: true },
+      include: { event: true, user: true },
+    });
+  }
+
+  /**
+   * Updates the quantity of a ticket type for an event.
+   *
+   * @param ticketTypeId - The ID of the ticket type.
+   * @param quantity - The new quantity for the ticket type.
+   * @param admin - The authenticated admin.
+   * @returns The updated ticket type entity.
+   */
   async updateTicketTypeQuantity(
     ticketTypeId: string,
     quantity: number,
     admin: UserEntity,
   ) {
-    // Ensure quantity is a valid positive integer
     if (quantity < 0) {
       throw new BadRequestException('Quantity cannot be negative');
     }
 
     try {
-      // Retrieve ticket type and associated event to verify ownership
       const ticketType = await this.prisma.ticketType.findUnique({
         where: { id: ticketTypeId },
         include: { event: true },
       });
 
-      // Check if ticket type exists
       if (!ticketType) {
-        this.logger.warn(`Ticket type with ID ${ticketTypeId} not found.`);
         throw new BadRequestException('Ticket type not found');
       }
-
-      // Verify that the admin is the creator of the event
       if (ticketType.event.creatorId !== admin.id) {
-        this.logger.warn(
-          `User ${admin.id} is not authorized to modify ticket type ${ticketTypeId}`,
-        );
         throw new ForbiddenException(
           'You are not authorized to edit this ticket type',
         );
       }
 
-      // Update the ticket type quantity
-      const updatedTicketType = await this.prisma.ticketType.update({
+      return this.prisma.ticketType.update({
         where: { id: ticketTypeId },
         data: { quantity },
       });
-
-      this.logger.log(
-        `Ticket type ${ticketTypeId} quantity updated successfully by admin ${admin.id}`,
-      );
-      return updatedTicketType;
     } catch (error) {
-      this.logger.error('Failed to update ticket type quantity', error.message);
       throw new InternalServerErrorException(
         'Failed to update ticket type quantity',
       );
     }
   }
 
-  // Delete a ticket by ID
+  /**
+   * Deletes a ticket by its ID.
+   *
+   * @param ticketId - The ID of the ticket.
+   * @returns `true` if the ticket was successfully deleted.
+   */
   async deleteTicket(ticketId: string) {
     await this.prisma.ticket.delete({ where: { id: ticketId } });
     return true;

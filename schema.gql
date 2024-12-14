@@ -51,6 +51,7 @@ input CreateProductInput {
 
 input CreateTicketPurchaseDTO {
   eventId: String!
+  eventName: String
   name: String
   quantity: Int!
   ticketTypeId: String!
@@ -113,10 +114,11 @@ type LoginResponseDTO {
 }
 
 type Mutation {
-  CreateTicket(createTicketTypeDTO: CreateTicketTypeDTO!, image: Upload!): TicketEntity!
+  CreateTicket(createTicketTypeDTO: CreateTicketTypeDTO!, image: Upload!): TicketCreatedEntity!
   DeleteTickets(ticketId: String!): Boolean!
-  PurchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketEntity!
-  UpdateTicketTypeQuantity(quantity: Int!, ticketId: String!): TicketEntity!
+  PurchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketPurchasedEntity!
+  ScanTicket(ticketId: String!): TicketEntity!
+  UpdateTicketTypeQuantity(quantity: Int!, ticketId: String!): TicketCreatedEntity!
   changeUserRole(id: String!, newRole: Role!): UserEntity!
   createEvent(createEventInput: CreateEventInput!, image: Upload!): EventEntity!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
@@ -172,10 +174,14 @@ type Product {
 }
 
 type Query {
-  AllTickets: [TicketEntity!]!
+  AllTickets: [TicketCreatedEntity!]!
   EventEntity(id: String!): EventEntity!
   Events: [EventEntity!]!
-  TicketsForAnEvent(eventId: String!): [TicketEntity!]!
+  GetTicketById(ticketId: String!): TicketEntity!
+  MyAllTickets: [TicketPurchasedEntity!]!
+  MyCreatedEvents: [EventEntity!]!
+  MyTicketsForEvent(eventId: String!): [TicketPurchasedEntity!]!
+  TicketsForEvent(eventId: String!): [TicketCreatedEntity!]!
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!
   notification(id: Int!): Notification!
@@ -210,15 +216,38 @@ enum Role {
   USER
 }
 
-type TicketEntity {
-  email: String!
+type TicketCreatedEntity {
+  createdAt: DateTime!
   eventId: String!
-  name: String!
-  phoneNumber: String
+  id: String!
+  image: String
+  price: Float!
+  quantity: Int!
+  ticketType: String!
+  updatedAt: DateTime
+}
+
+type TicketEntity {
+  eventId: String!
+  id: ID!
   price: Float!
   quantity: Int!
   ticketType: TicketTypeEnum!
   transactionId: String!
+  user: UserEntity!
+}
+
+type TicketPurchasedEntity {
+  createdAt: DateTime!
+  eventId: String!
+  eventName: String
+  id: ID!
+  price: Float!
+  quantity: Int!
+  scanned: Boolean!
+  ticketType: String!
+  transactionId: String!
+  updatedAt: DateTime
 }
 
 """The type of ticket"""

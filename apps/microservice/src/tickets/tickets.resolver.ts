@@ -11,13 +11,18 @@ import { CreateTicketPurchaseDTO } from './dto/create-ticket-purchase.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../users/entities/user.entity';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-minimal';
+import { TicketCreatedEntity } from './entities/ticket-created.entity';
+import { TicketPurchasedEntity } from './entities/ticket-purchased.entity';
 
-@Resolver(() => TicketEntity)
+@Resolver()
 export class TicketsResolver {
   constructor(private readonly ticketsService: TicketsService) {}
 
-  // Mutation for Admins to create ticket types for an event
-  @Mutation(() => TicketEntity ,{ name: 'CreateTicket' })
+  /**
+   * Admin creates a ticket type for an event.
+   * Requires the admin to be authenticated and authorized.
+   */
+  @Mutation(() => TicketCreatedEntity, { name: 'CreateTicket' })
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   createTicketType(
@@ -25,11 +30,18 @@ export class TicketsResolver {
     @Args({ name: 'image', type: () => GraphQLUpload }) image: FileUpload,
     @CurrentUser() admin: UserEntity,
   ) {
-    return this.ticketsService.createTicketType(createTicketTypeDTO, admin, image);
+    return this.ticketsService.createTicketType(
+      createTicketTypeDTO,
+      admin,
+      image,
+    );
   }
 
-  // Mutation to purchase a ticket, available to authenticated users
-  @Mutation(() => TicketEntity , { name: 'PurchaseTicket' })
+  /**
+   * User purchases a ticket for an event.
+   * Requires the user to be authenticated.
+   */
+  @Mutation(() => TicketPurchasedEntity, { name: 'PurchaseTicket' })
   @UseGuards(JwtAuthGuard)
   async purchaseTicket(
     @Args('createTicketPurchaseDTO')
@@ -39,37 +51,109 @@ export class TicketsResolver {
     return this.ticketsService.purchaseTicket(createTicketPurchaseDTO, user);
   }
 
-   // Query for users to view all tickets for a specific event
-   @Query(() => [TicketEntity], { name: 'TicketsForAnEvent' })
-   async findTicketsForEvent(@Args('eventId', { type: () => String }) eventId: string) {
-     return this.ticketsService.getTicketsForEvent(eventId);
-   }
- 
-   // Query for admins to view all tickets
-   @Query(() => [TicketEntity], { name: 'AllTickets' })
-   @Roles(Role.ADMIN)
-   @UseGuards(JwtAuthGuard, RolesGuard)
-   async findAllTickets() {
-     return this.ticketsService.getAllTickets();
-   }
- 
-   // Mutation for admins to update a ticket
-   @Mutation(() => TicketEntity,  { name: 'UpdateTicketTypeQuantity' })
-   @Roles(Role.ADMIN)
-   @UseGuards(JwtAuthGuard, RolesGuard)
-   async updateTicket(
-     @Args('ticketId', { type: () => String }) ticketId: string,
-     @Args('quantity', { type: () => Int }) quantity: number,
-     @CurrentUser() admin: UserEntity
-   ) {
-     return this.ticketsService.updateTicketTypeQuantity(ticketId, quantity, admin);
-   }
- 
-   // Mutation for admins to delete a ticket
-   @Mutation(() => Boolean,  { name: 'DeleteTickets' })
-   @Roles(Role.ADMIN)
-   @UseGuards(JwtAuthGuard, RolesGuard)
-   async deleteTicket(@Args('ticketId', { type: () => String }) ticketId: string) {
-     return this.ticketsService.deleteTicket(ticketId);
-   }
- }
+  /**
+   * Retrieves all tickets purchased by the authenticated user for a specific event.
+   */
+  @Query(() => [TicketPurchasedEntity], { name: 'MyTicketsForEvent' })
+  @UseGuards(JwtAuthGuard)
+  async getUserTicketsForEvent(
+    @Args('eventId', { type: () => String }) eventId: string,
+    @CurrentUser() user: UserEntity,
+  ): Promise<TicketPurchasedEntity[]> {
+    return this.ticketsService.getUserTicketsForEvent(user.id, eventId);
+  }
+
+  /**
+   * Retrieves all tickets purchased by the authenticated user across all events.
+   */
+  @Query(() => [TicketPurchasedEntity], { name: 'MyAllTickets' })
+  @UseGuards(JwtAuthGuard)
+  async getAllTicketsForUser(
+    @CurrentUser() user: UserEntity,
+  ): Promise<TicketPurchasedEntity[]> {
+    return this.ticketsService.getAllTicketsForUser(user.id);
+  }
+
+  /**
+   * Retrieves a single ticket by its ID for the authenticated user.
+   */
+  @Query(() => TicketEntity, { name: 'GetTicketById' })
+  @UseGuards(JwtAuthGuard)
+  async getTicketById(
+    @Args('ticketId', { type: () => String }) ticketId: string,
+    @CurrentUser() user: UserEntity,
+  ): Promise<TicketEntity> {
+    return this.ticketsService.getTicketById(ticketId, user.id);
+  }
+
+  /**
+   * Admin retrieves all tickets across all events created by them.
+   * Requires admin authentication and authorization.
+   */
+  @Query(() => [TicketCreatedEntity], { name: 'AllTickets' })
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async findAllTickets(@CurrentUser() admin: UserEntity) {
+    return this.ticketsService.getAllTickets(admin);
+  }
+
+  /**
+   * Admin retrieves all tickets for a specific event.
+   * Requires admin authentication and authorization.
+   */
+  @Query(() => [TicketCreatedEntity], { name: 'TicketsForEvent' })
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async getTicketsForEvent(
+    @Args('eventId', { type: () => String }) eventId: string,
+    @CurrentUser() admin: UserEntity,
+  ) {
+    return this.ticketsService.getTicketsForEvent(eventId);
+  }
+
+  /**
+   * Admin scans a ticket by its ID to validate entry.
+   * Requires admin authentication and authorization.
+   */
+  @Mutation(() => TicketEntity, { name: 'ScanTicket' })
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async scanTicket(
+    @Args('ticketId', { type: () => String }) ticketId: string,
+    @CurrentUser() user: UserEntity,
+  ): Promise<TicketEntity> {
+    return this.ticketsService.scanTicket(ticketId, user.id);
+  }
+
+  /**
+   * Admin updates the quantity of a specific ticket type for an event.
+   * Requires admin authentication and authorization.
+   */
+  @Mutation(() => TicketCreatedEntity, { name: 'UpdateTicketTypeQuantity' })
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async updateTicket(
+    @Args('ticketId', { type: () => String }) ticketId: string,
+    @Args('quantity', { type: () => Int }) quantity: number,
+    @CurrentUser() admin: UserEntity,
+  ) {
+    return this.ticketsService.updateTicketTypeQuantity(
+      ticketId,
+      quantity,
+      admin,
+    );
+  }
+
+  /**
+   * Admin deletes a ticket by its ID.
+   * Requires admin authentication and authorization.
+   */
+  @Mutation(() => Boolean, { name: 'DeleteTickets' })
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async deleteTicket(
+    @Args('ticketId', { type: () => String }) ticketId: string,
+  ) {
+    return this.ticketsService.deleteTicket(ticketId);
+  }
+}

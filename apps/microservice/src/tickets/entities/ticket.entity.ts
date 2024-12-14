@@ -4,8 +4,10 @@ import {
   Float,
   Int,
   registerEnumType,
+  ID,
 } from '@nestjs/graphql';
 import { TicketTypeEnum } from '@prisma/client';
+import { UserEntity } from '../../users/entities/user.entity';
 
 registerEnumType(TicketTypeEnum, {
   name: 'TicketTypeEnum',
@@ -14,14 +16,8 @@ registerEnumType(TicketTypeEnum, {
 
 @ObjectType()
 export class TicketEntity {
-  @Field()
-  name: string;
-
-  @Field({ nullable: true })
-  phoneNumber?: string;
-
-  @Field()
-  email: string;
+  @Field(() => ID)
+  id: string;
 
   @Field(() => Float)
   price: number;
@@ -29,10 +25,11 @@ export class TicketEntity {
   @Field(() => Int)
   quantity: number;
 
-
-
   @Field(() => TicketTypeEnum)
-  ticketType: TicketTypeEnum;
+  ticketType: string;
+
+  @Field()
+  user : UserEntity;
 
   @Field()
   transactionId: string;
