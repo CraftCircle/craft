@@ -28,6 +28,7 @@ import { PaymentsController } from './payments/payments.controller';
 import { PaymentsResolver } from './payments/payments.resolver';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
+import { AuthMiddleware } from './auth/auth.middleware';
 @Module({
   imports: [
     PrismaModule,
@@ -103,6 +104,7 @@ export class AppModule implements NestModule {
     consumer
       .apply(
         graphqlUploadExpress({ maxFileSize: 1024 * 1024 * 50, maxFiles: 10 }),
+        AuthMiddleware,
       )
       .forRoutes('graphql');
   }

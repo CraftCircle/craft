@@ -9,6 +9,7 @@ import { LoginRequestDTO } from './dto/login-request.dto';
 import { LoginResponseDTO } from './dto/login-response.dto';
 import { RegisterResponseDTO } from './dto/register-response.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { RegisterOAuthInput } from './dto/register-oauth.dto';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
@@ -101,13 +102,57 @@ export class AuthService {
     //   newUser.name,
     // );
 
-    return { access_token: token ,
+    return {
+      access_token: token,
       user: {
         id: newUser.id,
         email: newUser.email,
         name: newUser.name,
         role: newUser.role,
         createdAt: newUser.createdAt,
+      },
+    };
+  }
+
+  /**
+   * Registers a new user with OAuth.
+   */
+
+  async registerOAuthUser(
+    registerOAuthUserData: RegisterOAuthInput,
+  ): Promise<RegisterResponseDTO> {
+    const { email, name, provider, providerId } = registerOAuthUserData;
+    // Check if the user already exists
+    let existingUser = await this.userService.findOne(email);
+    if (!existingUser) {
+      // Create a new user if they don't exist
+      existingUser = await this.userService.createUser({
+        email,
+        name,
+        password: null, // No password for OAuth users
+        role: Role.USER,
+        provider,
+        providerId,
+      });
+    }
+
+    // Generate a JWT token for the user
+    const payload = {
+      email: existingUser.email,
+      sub: existingUser.id,
+      role: existingUser.role,
+    };
+    const token = this.jwtService.sign(payload);
+
+    // Return the RegisterResponseDTO
+    return {
+      access_token: token,
+      user: {
+        id: existingUser.id,
+        email: existingUser.email,
+        name: existingUser.name,
+        role: existingUser.role,
+        createdAt: existingUser.createdAt,
       },
     };
   }

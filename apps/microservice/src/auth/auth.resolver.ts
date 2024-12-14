@@ -5,6 +5,7 @@ import { RegisterResponseDTO } from './dto/register-response.dto';
 import { LoginResponseDTO } from './dto/login-response.dto';
 import { LoginRequestDTO } from './dto/login-request.dto';
 import { Public } from './decorators/public.decorator';
+import { RegisterOAuthInput } from './dto/register-oauth.dto';
 
 @Resolver()
 export class AuthResolver {
@@ -24,5 +25,13 @@ export class AuthResolver {
     @Args('loginInput') loginInput: LoginRequestDTO,
   ): Promise<LoginResponseDTO> {
     return this.authService.login(loginInput);
+  }
+
+  @Public()
+  @Mutation(() => RegisterResponseDTO)
+  async registerOAuthUser(
+    @Args('input') registerOAuthUserData: RegisterOAuthInput,
+  ): Promise<RegisterResponseDTO> {
+    return this.authService.registerOAuthUser(registerOAuthUserData);
   }
 }

@@ -132,6 +132,7 @@ type Mutation {
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
   multipleUpload(files: [Upload!]!): [String!]!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
+  registerOAuthUser(input: RegisterOAuthInput!): RegisterResponseDTO!
   registerUrl: String!
   removeNotification(id: Int!): Notification!
   removeOrder(id: String!): Boolean!
@@ -193,6 +194,13 @@ type Query {
   product(id: String!): Product!
   products: [Product!]!
   whoAmI: UserEntity!
+}
+
+input RegisterOAuthInput {
+  email: String!
+  name: String!
+  provider: String!
+  providerId: String!
 }
 
 input RegisterRequestDTO {
