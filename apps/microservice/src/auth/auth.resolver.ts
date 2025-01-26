@@ -27,11 +27,11 @@ export class AuthResolver {
     return this.authService.login(loginInput);
   }
 
-  @Public()
-  @Mutation(() => RegisterResponseDTO)
-  async registerOAuthUser(
-    @Args('input') registerOAuthUserData: RegisterOAuthInput,
-  ): Promise<RegisterResponseDTO> {
-    return this.authService.registerOAuthUser(registerOAuthUserData);
-  }
+  // @Public()
+  // @Mutation(() => RegisterResponseDTO)
+  // async registerOAuthUser(
+  //   @Args('input') registerOAuthUserData: RegisterOAuthInput,
+  // ): Promise<RegisterResponseDTO> {
+  //   return this.authService.registerOAuthUser(registerOAuthUserData);
+  // }
 }
