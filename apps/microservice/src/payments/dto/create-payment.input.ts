@@ -8,6 +8,4 @@ export class CreatePaymentInput {
   @Field()
   amount: string;
 
-  @Field()
-  accountReference: string;
 }

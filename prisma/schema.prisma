@@ -8,21 +8,22 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(uuid()) @map("_id")
-  email       String    @unique
+  id          String        @id @default(uuid()) @map("_id")
+  email       String        @unique
   password    String?
-  provider    String    @default("email")
+  provider    String        @default("email")
   providerId  String?
   name        String
   phoneNumber String?
-  role        Role      @default(USER)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  role        Role          @default(USER)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   post        Post[]
   event       Event[]
   ticket      Ticket[]
   product     Product[]
   order       Order[]
+  Transaction Transaction[]
 }
 
 enum Role {
@@ -50,7 +51,7 @@ model Ticket {
   id            String         @id @default(uuid()) @map("_id")
   price         Float
   ticketType    TicketTypeEnum
-  transactionId String         @unique
+  transactionId String
   quantity      Int
   scanned       Boolean        @default(false)
   eventId       String
@@ -58,6 +59,27 @@ model Ticket {
   event         Event          @relation(fields: [eventId], references: [id])
   user          User           @relation(fields: [userId], references: [id])
   createdAt     DateTime       @default(now())
+  Transaction   Transaction    @relation(fields: [transactionId], references: [id])
+}
+
+model Transaction {
+  id             String            @id @default(uuid()) @map("_id")
+  amount         Float
+  invoiceNumber  String?           @unique
+  userId         String
+  user           User              @relation(fields: [userId], references: [id])
+  status         TransactionStatus @default(PENDING)
+  extra_data     String?           @default("")
+  pesapalOrderId String?           @unique
+  ticket         Ticket[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
 }
 
 enum TicketTypeEnum {

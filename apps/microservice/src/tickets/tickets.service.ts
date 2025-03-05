@@ -6,11 +6,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PaymentsService } from '../payments/payments.service';
+// import { PaymentsService } from '../payments/payments.service';
 import { CreateTicketTypeDTO } from './dto/create-ticket-type.dto';
 import { CreateTicketPurchaseDTO } from './dto/create-ticket-purchase.dto';
 import { UserEntity } from '../users/entities/user.entity';
 import { TicketType as PrismaTicketType, TicketType } from '@prisma/client';
+import { PesapalService } from '../pesapal/pesapal.service';
 import { Logger } from '@nestjs/common';
 import { FileUpload } from 'graphql-upload-minimal';
 import { UploadService } from '../upload/upload.service';
@@ -23,7 +24,8 @@ export class TicketsService {
   private readonly logger = new Logger(TicketsService.name);
   constructor(
     private prisma: PrismaService,
-    private paymentService: PaymentsService,
+    // private paymentService: PaymentsService,
+    private pesapalService: PesapalService,
     private notificationService: NotificationsService,
     private uploadService: UploadService,
   ) {}
@@ -97,81 +99,141 @@ export class TicketsService {
     createTicketPurchaseDto: CreateTicketPurchaseDTO,
     user: UserEntity,
   ): Promise<TicketPurchasedEntity> {
-    const { ticketTypeId, quantity, transactionId, eventId, name } =
+    const { ticketTypeId, quantity, eventId, phoneNumber } =
       createTicketPurchaseDto;
 
-    // Optionally verify payment.
-    const skipPaymentVerification = true;
-    if (!skipPaymentVerification) {
-      try {
-        const paymentVerified =
-          await this.paymentService.verifyPayment(transactionId);
-        if (!paymentVerified) {
-          throw new BadRequestException('Payment could not be verified');
-        }
-      } catch (error) {
-        this.logger.error('Payment verification failed', error.message);
-        throw new InternalServerErrorException('Payment verification failed');
-      }
-    }
-
-    let ticketType: TicketType;
     try {
-      // Ensure the ticket type exists and has sufficient quantity.
-      ticketType = await this.prisma.ticketType.findUnique({
+      // Validate Ticket Type
+      const ticketType = await this.prisma.ticketType.findUnique({
         where: { id: ticketTypeId },
       });
       if (!ticketType) {
-        throw new BadRequestException('Ticket type not found');
+        throw new BadRequestException(
+          'The selected ticket type does not exist.',
+        );
       }
       if (ticketType.quantity < quantity) {
-        throw new BadRequestException('Not enough tickets available');
+        throw new BadRequestException(
+          `Insufficient ticket quantity. Only ${ticketType.quantity} tickets are available.`,
+        );
       }
 
-      // Update the ticket type's quantity.
-      await this.prisma.ticketType.update({
-        where: { id: ticketTypeId },
-        data: { quantity: { decrement: quantity } },
+      // Validate Event
+      const event = await this.prisma.event.findUnique({
+        where: { id: eventId },
       });
-    } catch (error) {
-      this.logger.error(
-        'Error during ticket availability check',
-        error.message,
-      );
-      throw new InternalServerErrorException(
-        'Ticket availability check failed',
-      );
-    }
+      if (!event) {
+        throw new BadRequestException('The associated event does not exist.');
+      }
 
-    try {
-      // Create and save the ticket.
-      const ticket = await this.prisma.ticket.create({
+      // Calculate Total Amount
+      const amount = ticketType.price * quantity;
+      // Get Pesapal IPN (if not registered, register one)
+      let ipnList = await this.pesapalService.getRegisteredIPNs();
+      if (!ipnList || ipnList.length === 0) {
+        const ipnResponse = await this.pesapalService.registerIPN(
+          'POST',
+          'https://yourdomain.com/ipn',
+        );
+        ipnList = [{ ipn_id: ipnResponse.ipn_id }];
+      }
+
+      const pesapalNotificationId = ipnList[0].ipn_id;
+
+      // Prepare Order Payload
+      const orderPayload = {
+        id: `TXN-${Date.now()}`, // Unique transaction reference
+        currency: 'KES',
+        amount,
+        description: `Ticket purchase for ${event.name}`,
+        callback_url: 'https://yourdomain.com/payment-callback',
+        notification_id: pesapalNotificationId,
+        billing_address: {
+          phone_number: phoneNumber,
+          email_address: user.email,
+          country_code: 'KE',
+          first_name: user.name,
+          last_name: '',
+        },
+      };
+
+      // Submit Order to Pesapal
+      const orderResponse = await this.pesapalService.submitOrder(orderPayload);
+
+      // Store Transaction in DB
+      const transaction = await this.prisma.transaction.create({
+        data: {
+          amount,
+          invoiceNumber: orderPayload.id,
+          userId: user.id,
+          pesapalOrderId: orderResponse.order_tracking_id,
+          status: 'PENDING',
+        },
+      });
+
+      // Temporarily Reserve Tickets
+      const reservation = await this.prisma.ticket.create({
         data: {
           price: ticketType.price,
           ticketType: ticketType.ticketType,
-          transactionId,
+          transactionId: transaction.id,
           quantity,
-          event: { connect: { id: eventId } },
-          user: { connect: { id: user.id } },
+          eventId,
+          userId: user.id,
           scanned: false,
         },
       });
 
-      // Send a notification to the user about the ticket purchase.
-      const notificationData = {
-        ...ticket,
-        eventName: (
-          await this.prisma.event.findUnique({ where: { id: eventId } })
-        )?.name,
-      };
-      await this.notificationService.sendTicketNotification(notificationData);
+      this.logger.log(
+        `Ticket reservation created for user ${user.email}. Waiting for payment confirmation.`,
+      );
 
-      this.logger.log(`Ticket purchase successful for user: ${user.email}`);
-      return ticket;
+      return reservation;
     } catch (error) {
-      this.logger.error('Failed to complete ticket purchase', error.message);
+      this.logger.error('Error during ticket purchase:', error.message);
       throw new InternalServerErrorException(
-        'Failed to complete ticket purchase',
+        'Failed to complete ticket purchase. Please try again later.',
+      );
+    }
+  }
+
+  /**
+   * Checks the payment status and confirms ticket purchases.
+   */
+  async confirmTicketPurchase(orderTrackingId: string): Promise<boolean> {
+    try {
+      const transaction = await this.prisma.transaction.findUnique({
+        where: { pesapalOrderId: orderTrackingId },
+      });
+      if (!transaction) throw new BadRequestException('Transaction not found.');
+
+      const paymentStatus =
+        await this.pesapalService.getTransactionStatus(orderTrackingId);
+
+      if (paymentStatus.payment_status_description === 'COMPLETED') {
+        // Update transaction status
+        await this.prisma.transaction.update({
+          where: { id: transaction.id },
+          data: { status: 'CONFIRMED' },
+        });
+
+        // Confirm the ticket purchase
+        await this.prisma.ticket.updateMany({
+          where: { transactionId: transaction.id },
+          data: { scanned: false }, // Mark as valid
+        });
+
+        this.logger.log(
+          `Payment confirmed. Tickets activated for transaction: ${transaction.id}`,
+        );
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      this.logger.error('Failed to confirm ticket purchase:', error.message);
+      throw new InternalServerErrorException(
+        'Failed to confirm ticket purchase.',
       );
     }
   }

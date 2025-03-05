@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Logger, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Router } from 'express';
 import { PaymentsService } from './payments.service';
 import { Public } from '../auth/decorators/public.decorator';
 

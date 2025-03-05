@@ -1,0 +1,15 @@
+import { forwardRef, Module } from '@nestjs/common';
+import { PesapalService } from './pesapal.service';
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
+import { PesapalResolver } from './pesapal.resolver';
+import { PesapalController } from './pesapal.controller';
+import { TicketsModule } from '../tickets/tickets.module';
+
+@Module({
+  imports: [HttpModule, ConfigModule, forwardRef(() => TicketsModule),],
+  providers: [PesapalResolver, PesapalService],
+  controllers: [PesapalController],
+  exports: [PesapalService],
+})
+export class PesapalModule {}

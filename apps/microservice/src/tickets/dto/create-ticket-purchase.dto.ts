@@ -18,5 +18,5 @@ export class CreateTicketPurchaseDTO {
   eventName?: string; // Name of the event for better user experience
 
   @Field({ nullable: true }) //Name of the user purchasing the ticket
-  name?: string;
+  phoneNumber?: string;
 }

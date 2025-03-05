@@ -2,6 +2,17 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input BillingAddressDTO {
+  city: String
+  country_code: String
+  email_address: String
+  first_name: String
+  last_name: String
+  line_1: String
+  phone_number: String
+  postal_code: Float
+}
+
 input CreateEventInput {
   date: DateTime!
   description: String!
@@ -29,9 +40,21 @@ type CreatePaymentAuth {
 }
 
 input CreatePaymentInput {
-  accountReference: String!
   amount: String!
   phoneNumber: String!
+}
+
+input CreatePesapalOrderDTO {
+  amount: Float!
+  billing_address: BillingAddressDTO!
+  branch: String
+  callback_url: String!
+  cancellation_url: String
+  currency: String!
+  description: String!
+  id: String!
+  notification_id: String!
+  redirect_mode: String
 }
 
 input CreatePostInput {
@@ -52,7 +75,7 @@ input CreateProductInput {
 input CreateTicketPurchaseDTO {
   eventId: String!
   eventName: String
-  name: String
+  phoneNumber: String
   quantity: Int!
   ticketTypeId: String!
   transactionId: String!
@@ -119,6 +142,7 @@ type Mutation {
   PurchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketPurchasedEntity!
   ScanTicket(ticketId: String!): TicketEntity!
   UpdateTicketTypeQuantity(quantity: Int!, ticketId: String!): TicketCreatedEntity!
+  cancelOrder(orderTrackingId: String!): String!
   changeUserRole(id: String!, newRole: Role!): UserEntity!
   createEvent(createEventInput: CreateEventInput!, image: Upload!): EventEntity!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
@@ -132,12 +156,15 @@ type Mutation {
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
   multipleUpload(files: [Upload!]!): [String!]!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
+  registerIPN(ipnNotificationType: String!, ipnUrl: String!): String!
   registerUrl: String!
   removeNotification(id: Int!): Notification!
   removeOrder(id: String!): Boolean!
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
+  requestRefund(refundPayload: RefundRequestDTO!): String!
   singleUpload(file: Upload!): String!
+  submitOrder(orderPayload: CreatePesapalOrderDTO!): String!
   updateEvent(id: String!, image: Upload, updateEventInput: UpdateEventInput!): EventEntity!
   updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
   updateOrder(id: String!, status: String!): Order!
@@ -184,6 +211,9 @@ type Query {
   TicketsForEvent(eventId: String!): [TicketCreatedEntity!]!
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!
+  getAccessToken: String!
+  getRegisteredIPNs: [String!]!
+  getTransactionStatus(orderTrackingId: String!): String!
   notification(id: Int!): Notification!
   notifications: [Notification!]!
   order(id: String!): Order!
@@ -193,6 +223,13 @@ type Query {
   product(id: String!): Product!
   products: [Product!]!
   whoAmI: UserEntity!
+}
+
+input RefundRequestDTO {
+  amount: Float!
+  confirmation_code: String!
+  remarks: String!
+  username: String!
 }
 
 input RegisterRequestDTO {

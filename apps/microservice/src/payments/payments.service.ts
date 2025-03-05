@@ -19,6 +19,24 @@ export class PaymentsService {
     return 'This action adds a new payment';
   }
 
+  async formatMpesaNumber(phone: string) {
+    if (!phone) {
+      return 'Invalid phone number: undefined or null value received.';
+    }
+    // Remove any non-digit characters
+    const cleanNumber = phone.replace(/[^\d]/g, '');
+
+    // Check if the number starts with a leading zero, and remove it
+    const formattedNumber = cleanNumber.startsWith('0')
+      ? cleanNumber.slice(1)
+      : cleanNumber;
+
+    // Add the country code if missing
+    return formattedNumber.startsWith('254')
+      ? `${formattedNumber}`
+      : `254${formattedNumber}`;
+  }
+
   async getAccessToken(): Promise<string> {
     const consumerKey = this.configService.get<string>('MPESA_CONSUMER_KEY');
     const consumerSecret = this.configService.get<string>(
@@ -55,17 +73,15 @@ export class PaymentsService {
       throw new Error('Failed to get access token');
     }
   }
-  async initiateStkPush(
-    phoneNumber: string,
-    amount: string,
-    accountReference: string,
-  ) {
+  async initiateStkPush(phoneNumber: string, amount: string) {
     const shortCode = this.configService.get<string>('MPESA_SHORTCODE');
     const passKey = this.configService.get<string>('MPESA_PASSKEY');
     const timestamp = moment().format('YYYYMMDDHHmmss');
     const password = Buffer.from(`${shortCode}${passKey}${timestamp}`).toString(
       'base64',
     );
+
+    const formatedPhoneNumber = this.formatMpesaNumber(phoneNumber);
 
     const token = await this.getAccessToken();
 
@@ -82,7 +98,7 @@ export class PaymentsService {
       Timestamp: timestamp,
       TransactionType: 'CustomerPayBillOnline',
       Amount: amount,
-      PartyA: '254725552554',
+      PartyA: formatedPhoneNumber,
       PartyB: shortCode,
       PhoneNumber: phoneNumber,
       CallBackURL: 'https://craft-vnrj.onrender.com/payments/callback',
@@ -111,12 +127,12 @@ export class PaymentsService {
   async createPayment(
     createPaymentInput: CreatePaymentInput,
   ): Promise<CreatePaymentAuth> {
-    const { phoneNumber, amount, accountReference } = createPaymentInput;
+    const { phoneNumber, amount } = createPaymentInput;
 
     const accessToken = await this.getAccessToken();
 
     try {
-      await this.initiateStkPush(phoneNumber, amount, accountReference);
+      await this.initiateStkPush(phoneNumber, amount);
       this.logger.log(`Payment initiated successfully for ${phoneNumber}`);
       return {
         access_token: accessToken,
@@ -161,42 +177,65 @@ export class PaymentsService {
   }
 
   async processCallback(callbackData: any) {
-    const resultCode = callbackData.Body.stkCallback.ResultCode;
-    const resultDesc = callbackData.Body.stkCallback.ResultDesc;
+    const stkCallback = callbackData.Body.stkCallback;
 
-    if (resultCode !== 0) {
-      this.logger.warn(`Transaction failed: ${resultDesc}`);
-      return { ResultCode: resultCode, ResultDesc: resultDesc };
+    const {
+      MerchantRequestID,
+      CheckoutRequestID,
+      ResultCode,
+      ResultDesc,
+      CallbackMetadata,
+    } = stkCallback;
+
+    if (ResultCode !== 0) {
+      this.logger.warn('C2B Transaction Failed', JSON.stringify(stkCallback));
+      return { ResultCode, ResultDesc };
     }
 
-    // Extract transaction details for successful transactions
-    const callbackMetadata =
-      callbackData.Body.stkCallback.CallbackMetadata.Item;
-    const amount = callbackMetadata.find(
-      (item: { Name: string }) => item.Name === 'Amount',
-    )?.Value;
-    const mpesaReceiptNumber = callbackMetadata.find(
-      (item: { Name: string }) => item.Name === 'MpesaReceiptNumber',
-    )?.Value;
-    const phoneNumber = callbackMetadata.find(
-      (item: { Name: string }) => item.Name === 'PhoneNumber',
-    )?.Value;
-    const transactionDate = callbackMetadata.find(
-      (item: { Name: string }) => item.Name === 'TransactionDate',
-    )?.Value;
+    if (ResultCode === 0) {
+      this.logger.warn(
+        `🚀🚀🚀 C2B Transaction Successfull 🚀🚀🚀 `,
+        JSON.stringify(stkCallback),
+      );
 
-    this.logger.log(
-      `Transaction Successful: Amount ${amount}, Mpesa Code ${mpesaReceiptNumber}, Phone ${phoneNumber}`,
-    );
+      this.logger.log({
+        MerchantRequestID,
+        CheckoutRequestID,
+        ResultCode,
+        ResultDesc,
+        CallbackMetadata,
+      });
 
-    // Here, you could save the transaction details to the database or trigger other services
-    return {
-      ResultCode: resultCode,
-      ResultDesc: resultDesc,
-      Amount: amount,
-      MpesaReceiptNumber: mpesaReceiptNumber,
-      PhoneNumber: phoneNumber,
-      TransactionDate: transactionDate,
-    };
+      // Extract transaction details for successful transactions
+      const callbackMetadata = stkCallback.CallbackMetadata.Item;
+      const amount = callbackMetadata.find(
+        (item: { Name: string }) => item.Name === 'Amount',
+      )?.Value;
+      const mpesaReceiptNumber = callbackMetadata.find(
+        (item: { Name: string }) => item.Name === 'MpesaReceiptNumber',
+      )?.Value;
+      const phoneNumber = callbackMetadata.find(
+        (item: { Name: string }) => item.Name === 'PhoneNumber',
+      )?.Value;
+      const transactionDate = callbackMetadata.find(
+        (item: { Name: string }) => item.Name === 'TransactionDate',
+      )?.Value;
+
+      this.logger.log(
+        `Transaction Successful: Amount ${amount}, Mpesa Code ${mpesaReceiptNumber}, Phone ${phoneNumber}`,
+      );
+
+      // Here, you could save the transaction details to the database or trigger other services
+      return {
+        ResultCode,
+        ResultDesc,
+        MerchantRequestID,
+        CheckoutRequestID,
+        Amount: amount,
+        MpesaReceiptNumber: mpesaReceiptNumber,
+        PhoneNumber: phoneNumber,
+        TransactionDate: transactionDate,
+      };
+    }
   }
 }
