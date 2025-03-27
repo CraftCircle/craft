@@ -61,8 +61,8 @@ export const LogoWrap = styled.a`
   align-items: center;
 
   img {
-    width: 64px;
-    height: 64px;
+    width: 80px;
+    height: 80px;
   }
 `;
 
@@ -126,7 +126,6 @@ export const NavToggle = styled.button`
     color: white;
   }
 `;
-
 
 export const DropdownContainer = styled.div`
   position: relative;

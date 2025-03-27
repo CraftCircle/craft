@@ -5,13 +5,7 @@ import Image from "next/image";
 import ThemeToggle from "@/components/ThemeToggle";
 import * as S from "@/styles/page.styles";
 import Link from "next/link";
-
-const heroImages = [
-  { src: "/1.svg", border: "#14b8a6", rotate: "-2deg" },
-  { src: "/2.svg", border: "#facc15", rotate: "2deg" },
-  { src: "/3.svg", border: "#ef4444", rotate: "-3deg" },
-  { src: "/4.svg", border: "#10b981", rotate: "3deg" },
-];
+import EmblaCarousel from "@/components/Carousel";
 
 const Page = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,8 +21,8 @@ const Page = () => {
               <Image
                 src="/logo.svg"
                 alt="CraftCircle Logo"
-                width={64}
-                height={64}
+                width={80}
+                height={80}
               />
             </S.LogoWrap>
           </Link>
@@ -74,18 +68,7 @@ const Page = () => {
           </S.Text>
         </S.Centered>
 
-        <S.ImageGrid>
-          {heroImages.map((img, index) => (
-            <S.ImageCard key={index} $border={img.border} $rotate={img.rotate}>
-              <Image
-                src={img.src}
-                alt={`hero-${index}`}
-                fill
-                style={{ objectFit: "cover" }}
-              />
-            </S.ImageCard>
-          ))}
-        </S.ImageGrid>
+        <EmblaCarousel />
       </S.Section>
 
       {/* About Section */}

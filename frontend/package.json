@@ -2,6 +2,9 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -18,8 +21,9 @@
     "@graphql-codegen/typescript-react-apollo": "^4.3.2",
     "@types/react-slick": "^0.23.13",
     "apollo-link-token-refresh": "^0.7.0",
-    "avm": "^0.0.200002",
     "clsx": "^2.1.1",
+    "embla-carousel-auto-scroll": "^8.5.2",
+    "embla-carousel-react": "^8.5.2",
     "framer-motion": "^12.6.2",
     "graphql": "^16.9.0",
     "jwt-decode": "^4.0.0",
