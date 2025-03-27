@@ -1,10 +1,9 @@
-import './globals.css';
-import Link from 'next/link'; // Import the Link component
+import { Inter } from "next/font/google";
+import "../styles/globals.css";
+import { ThemeProvider } from "@/provider/theme-provider";
+import ApolloWrapper from "./client-layout";
 
-export const metadata = {
-  title: 'CraftCircle',
-  description: 'Your platform for crafting amazing experiences.',
-};
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
@@ -12,28 +11,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <header style={{ padding: '1rem', backgroundColor: '#f4f4f4' }}>
-          <h1>CraftCircle</h1>
-          <nav>
-            <Link href="/" style={{ marginRight: '1rem' }}>
-              Home
-            </Link>
-            <Link href="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <footer
-          style={{
-            padding: '1rem',
-            marginTop: '2rem',
-            backgroundColor: '#f4f4f4',
-          }}
-        >
-          <p>&copy; 2024 CraftCircle. All rights reserved.</p>
-        </footer>
-      </body>
-    </html>
+    <ThemeProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={inter.className}>
+          <ApolloWrapper>{children}</ApolloWrapper>
+        </body>
+      </html>
+    </ThemeProvider>
   );
 }

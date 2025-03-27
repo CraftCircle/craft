@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_OPTIONS='--no-warnings' next start",
     "lint": "next lint",
     "codegen": "graphql-codegen --config codegen.ts"
   },
@@ -16,12 +16,20 @@
     "@graphql-codegen/typescript": "^4.1.2",
     "@graphql-codegen/typescript-operations": "^4.4.0",
     "@graphql-codegen/typescript-react-apollo": "^4.3.2",
+    "@types/react-slick": "^0.23.13",
+    "apollo-link-token-refresh": "^0.7.0",
     "avm": "^0.0.200002",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.6.2",
     "graphql": "^16.9.0",
+    "jwt-decode": "^4.0.0",
     "next": "15.0.3",
     "next-client-cookies": "^2.0.0",
     "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106"
+    "react-dom": "19.0.0-rc-66855b96-20241106",
+    "react-slick": "^0.30.3",
+    "slick-carousel": "^1.8.1",
+    "styled-components": "^6.1.16"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.3",
@@ -29,6 +37,8 @@
     "@types/node": "^22.10.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/styled-components": "^5.1.34",
+    "babel-plugin-styled-components": "^2.1.4",
     "eslint": "^9.16",
     "eslint-config-next": "15.0.3",
     "typescript": "^5"
