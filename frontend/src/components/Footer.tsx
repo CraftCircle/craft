@@ -109,7 +109,7 @@ const Footer = () => {
             </ContactRow>
             <ContactRow>
               <Image src="/phone.svg" alt="phone" width={20} height={20} />
-              <span>+254 700 123 456</span>
+              <span>+254 </span>
             </ContactRow>
             <ContactRow>
               <div style={{ width: 20, height: 20, background: "#111928" }} />
