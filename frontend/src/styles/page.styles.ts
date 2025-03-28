@@ -1,5 +1,6 @@
 import styled from "styled-components";
 // import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface CardProps {
   $border: string;
@@ -61,7 +62,7 @@ export const LogoWrap = styled.a`
   align-items: center;
 
   img {
-    width: 80px;
+    width: 156px;
     height: 80px;
   }
 `;
@@ -260,31 +261,88 @@ export const ImageCard = styled.div<CardProps>`
 /* TWO-COLUMN LAYOUT (ABOUT) */
 /* ============================= */
 
-export const TwoCol = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  max-width: 1024px;
-  margin: 0 auto;
+export const AboutRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 28px;
+  gap: 120px;
+  justify-content: flex-start;
   align-items: center;
+`;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    text-align: center;
+export const Dots = styled.div`
+  width: 172px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 20px;
+  justify-content: flex-end;
+  opacity: 0.5;
+
+  div {
+    width: 3px;
+    height: 3px;
+    background: #1b4a47;
+    border-radius: 9999px;
+  }
+
+  &::before {
+    content: "";
+    display: block;
+    width: 3px;
+    height: 3px;
+    background: #1b4a47;
+    border-radius: 9999px;
   }
 `;
 
-export const TextCol = styled.div`
-  p {
-    margin-bottom: 1rem;
-    line-height: 1.6;
-  }
+export const GreenRing = styled.div`
+  width: 110px;
+  height: 110px;
+  border-radius: 9999px;
+  border: 13px solid #35938d;
+`;
 
-  strong {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
+export const AboutImage = styled(Image)`
+  background: white;
+  border-radius: 22.14px;
+  border: 4px solid #1b4a47;
+`;
+
+export const TextWrap = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+`;
+
+export const Tag = styled.div`
+  color: #35938d;
+  font-size: 16px;
+  font-family: "Outfit", sans-serif;
+  font-weight: 500;
+`;
+
+export const AboutTitle = styled.h2`
+  color: #101010;
+  font-size: 36px;
+  font-family: "Outfit", sans-serif;
+  font-weight: 700;
+`;
+
+export const AboutSubheading = styled.h3`
+  color: #060606;
+  font-size: 16px;
+  font-family: "Outfit", sans-serif;
+  font-weight: 500;
+`;
+
+export const AboutParagraph = styled.p`
+  color: #060606;
+  font-size: 16px;
+  font-family: "Outfit", sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
 `;
 
 /* ============================= */

@@ -15,7 +15,7 @@ const numberWithinRange = (number: number, min: number, max: number): number =>
 const CarouselContainer = styled.div`
   max-width: 850px;
   margin: 0 auto;
-  height: 650
+  height: 650px;
 `;
 
 const Viewport = styled.div`
@@ -31,8 +31,8 @@ const Slide = styled.div<{ $border: string; $rotate: string }>`
   flex: 0 0 100%;
   position: relative;
   height: 650px;
-  border: 5px solid ${({ $border }) => $border};
-  border-radius: 1rem;
+  border: 4px solid ${({ $border }) => $border};
+  border-radius: 22px;
   overflow: hidden;
   transform: rotate(${({ $rotate }) => $rotate});
   transition: transform 0.15s ease;
