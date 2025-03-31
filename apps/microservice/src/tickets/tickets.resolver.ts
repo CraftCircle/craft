@@ -3,7 +3,7 @@ import { TicketsService } from './tickets.service';
 import { TicketEntity } from './entities/ticket.entity';
 import { UseGuards } from '@nestjs/common';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role, User } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { CreateTicketTypeDTO } from './dto/create-ticket-type.dto';
@@ -13,11 +13,30 @@ import { UserEntity } from '../users/entities/user.entity';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-minimal';
 import { TicketCreatedEntity } from './entities/ticket-created.entity';
 import { TicketPurchasedEntity } from './entities/ticket-purchased.entity';
+import { UploadHelper } from '../upload/utils/upload-helper';
+import { UploadService } from '../upload/upload.service';
 
 @Resolver()
 export class TicketsResolver {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly uploadService: UploadService,
+  ) {}
 
+  /**
+   * Upload ticket image independently (for preview and separate upload flow)
+   * Returns Cloudinary URL.
+   */
+  @Mutation(() => String, { name: 'uploadTicketImage' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async uploadTicketImage(
+    @Args({ name: 'file', type: () => GraphQLUpload }) file: FileUpload,
+  ): Promise<string> {
+    const uploader = new UploadHelper(this.uploadService);
+    const { image } = await uploader.uploadFields({ image: file });
+    return image;
+  }
   /**
    * Admin creates a ticket type for an event.
    * Requires the admin to be authenticated and authorized.
@@ -27,14 +46,9 @@ export class TicketsResolver {
   @UseGuards(JwtAuthGuard, RolesGuard)
   createTicketType(
     @Args('createTicketTypeDTO') createTicketTypeDTO: CreateTicketTypeDTO,
-    @Args({ name: 'image', type: () => GraphQLUpload }) image: FileUpload,
     @CurrentUser() admin: UserEntity,
   ) {
-    return this.ticketsService.createTicketType(
-      createTicketTypeDTO,
-      admin,
-      image,
-    );
+    return this.ticketsService.createTicketType(createTicketTypeDTO, admin);
   }
 
   /**

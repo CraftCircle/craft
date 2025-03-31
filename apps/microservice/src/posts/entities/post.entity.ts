@@ -10,14 +10,13 @@ export class PostEntity {
 
   @Field()
   content: string;
-
-  @Field()
-  audio?: string;
-
-  @Field()
+  @Field({ nullable: true })
   image?: string;
 
-  @Field()
+  @Field({ nullable: true })
+  audio?: string;
+
+  @Field({ nullable: true })
   video?: string;
 
   @Field()

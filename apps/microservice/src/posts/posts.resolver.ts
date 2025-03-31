@@ -6,158 +6,108 @@ import { UpdatePostInput } from './dto/update-post.input';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../users/entities/user.entity';
-import {
-  BadRequestException,
-  ForbiddenException,
-  Logger,
-  UseGuards,
-} from '@nestjs/common';
+import { ForbiddenException, Logger, UseGuards } from '@nestjs/common';
 import { UploadService } from '../upload/upload.service';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-minimal';
-import { streamToBuffer } from '../upload/upload.resolver';
+import { UploadHelper } from '../upload/utils/upload-helper';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @Resolver(() => PostEntity)
 export class PostResolver {
   private readonly logger = new Logger(PostResolver.name);
+
   constructor(
     private readonly postService: PostService,
     private readonly uploadService: UploadService,
   ) {}
 
+  /**
+   * Uploads a post image file (optional media for a post).
+   * This should be called before `createPost`, and the returned
+   * Cloudinary URL used in the `createPostInput.image` field.
+   *
+   * @param file - Image file to upload.
+   * @returns Cloudinary URL of the uploaded image.
+   */
+  @Mutation(() => String, { name: 'uploadPostImage' })
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.USER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async uploadPostImage(
+    @Args({ name: 'file', type: () => GraphQLUpload }) file: FileUpload,
+  ): Promise<string> {
+    const uploader = new UploadHelper(this.uploadService);
+    const { image } = await uploader.uploadFields({ image: file });
+    return image;
+  }
+
+  /**
+   * Creates a new post using the provided input.
+   * Only users with role ADMIN or SUPERADMIN are allowed to post.
+   *
+   * @param createPostInput - Input data for the new post.
+   * @param user - Authenticated user making the request.
+   * @returns The newly created post.
+   */
   @Mutation(() => PostEntity)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.SUPERADMIN, Role.ADMIN)
   async createPost(
     @Args('createPostInput') createPostInput: CreatePostInput,
     @CurrentUser() user: UserEntity,
-    @Args({ name: 'image', type: () => GraphQLUpload, nullable: true })
-    image?: FileUpload,
-    @Args({ name: 'video', type: () => GraphQLUpload, nullable: true })
-    video?: FileUpload,
-    @Args({ name: 'audio', type: () => GraphQLUpload, nullable: true })
-    audio?: FileUpload,
   ): Promise<PostEntity> {
-    this.logger.log('Starting createPost mutation');
+    this.logger.log('Creating post...');
 
-    this.logger.log(`User details: ${JSON.stringify(user)}`);
-
-    // Check if the user has the admin role
-    if (user.role !== 'ADMIN') {
+    // Only allow admins and superadmins to create posts
+    if (user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
       this.logger.error('User does not have permission to create posts');
       throw new ForbiddenException('Only admins can create posts');
     }
 
-    try {
-      if (image) {
-        this.logger.log('Processing image upload...');
-        const { createReadStream, filename } = image;
-        const fileBuffer = await streamToBuffer(createReadStream());
-        this.logger.log('Image file converted to buffer');
-
-        const imageUploadResult = await this.uploadService.handleUpload(
-          {
-  
-            buffer: fileBuffer,
-            originalname: filename, 
-          } as Express.Multer.File,
-          3,
-          // 'image',
-        );
-
-        this.logger.log(
-          `Image uploaded to Cloudinary. URL: ${imageUploadResult}`,
-        );
-
-        createPostInput.image = imageUploadResult;
-
-        this.logger.log(
-          `Assigned image URL to createPostInput: ${createPostInput.image}`,
-        );
-      }
-
-      if (audio) {
-        this.logger.log('Processing audio upload...');
-        const { createReadStream, filename } = audio;
-        const fileBuffer = await streamToBuffer(createReadStream());
-        this.logger.log('Audio file converted to buffer');
-
-        const audioUploadResult = await this.uploadService.handleUpload(
-          {
-            buffer: fileBuffer,
-            originalname: filename,
-          } as Express.Multer.File,
-          3,
-          
-        );
-
-        this.logger.log(
-          `Audio uploaded to Cloudinary. URL: ${audioUploadResult}`,
-        );
-
-        createPostInput.audio = audioUploadResult;
-
-        this.logger.log(
-          `Assigned audio URL to createPostInput: ${createPostInput.audio}`,
-        );
-      }
-
-      if (video) {
-        this.logger.log('Processing video upload...');
-        const { createReadStream, filename } = video;
-        const fileBuffer = await streamToBuffer(createReadStream());
-        this.logger.log('Video file converted to buffer');
-
-        const videoUploadResult = await this.uploadService.handleUpload(
-          {
-            buffer: fileBuffer,
-            originalname: filename,
-          } as Express.Multer.File,
-          3,
-          
-        );
-
-        this.logger.log(
-          `Video uploaded to Cloudinary. URL: ${videoUploadResult}`,
-        );
-
-        createPostInput.video = videoUploadResult;
-
-        this.logger.log(
-          `Assigned video URL to createPostInput: ${createPostInput.video}`,
-        );
-      }
-
-      // Call the postService to create the post
-      const createdPost = await this.postService.createPost(
-        createPostInput,
-        user,
-      );
-      this.logger.log(`Post created successfully with ID: ${createdPost.id}`);
-      return createdPost;
-    } catch (error) {
-      this.logger.error(
-        'Detailed error in createPost mutation:',
-        error.message,
-      );
-      this.logger.error(error.stack);
-      throw new BadRequestException('Failed to create post');
-    }
+    const post = await this.postService.createPost(createPostInput, user);
+    this.logger.log(`Post created with ID: ${post.id}`);
+    return post;
   }
 
+  /**
+   * Fetch all posts.
+   * Publicly accessible.
+   */
   @Query(() => [PostEntity], { name: 'posts' })
   findAll() {
     return this.postService.findAll();
   }
 
+  /**
+   * Fetch a single post by its ID.
+   * Publicly accessible.
+   *
+   * @param id - UUID of the post to fetch.
+   */
   @Query(() => PostEntity, { name: 'post' })
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.postService.findOne(id);
   }
 
+  /**
+   * Update a post. Only authenticated users with correct roles can update.
+   *
+   * @param updatePostInput - The fields to update on the post.
+   */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.SUPERADMIN, Role.ADMIN)
   @Mutation(() => PostEntity)
   updatePost(@Args('updatePostInput') updatePostInput: UpdatePostInput) {
     return this.postService.update(updatePostInput.id, updatePostInput);
   }
 
+  /**
+   * Remove a post by ID.
+   * Requires authentication and authorization.
+   *
+   * @param id - UUID of the post to delete.
+   */
   @Mutation(() => PostEntity)
   removePost(@Args('id', { type: () => String }) id: string) {
     return this.postService.remove(id);

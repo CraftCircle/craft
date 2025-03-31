@@ -22,7 +22,6 @@ model User {
   event       Event[]
   ticket      Ticket[]
   product     Product[]
-  order       Order[]
   Transaction Transaction[]
 }
 
@@ -101,38 +100,23 @@ model TicketType {
 }
 
 model Product {
-  id          String   @id @default(uuid())
-  name        String
-  description String
-  price       Float
-  stock       Int
-  owner       User     @relation(fields: [ownerId], references: [id])
-  ownerId     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  order       Order[]  @relation("ProductOrders")
+  id            String         @id @default(uuid())
+  name          String
+  description   String
+  price         Float
+  stock         Int
+  category      String
+  location      String?
+  contactNumber String?         
+  images        String[]        
+  isPublished   Boolean         @default(false)
+  views         Int             @default(0)
+  owner         User            @relation(fields: [ownerId], references: [id])
+  ownerId       String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
 
-model Order {
-  id          String      @id @default(uuid())
-  userId      String
-  productId   String
-  quantity    Int
-  status      OrderStatus @default(PENDING)
-  totalAmount Float
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  product     Product     @relation("ProductOrders", fields: [productId], references: [id])
-  User        User        @relation(fields: [userId], references: [id])
-}
-
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  SHIPPED
-  DELIVERED
-  CANCELED
-}
 
 model Post {
   id        String   @id @default(uuid()) @map("_id")

@@ -27,7 +27,6 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { PaymentsController } from './payments/payments.controller';
 import { PaymentsResolver } from './payments/payments.resolver';
 import { ProductsModule } from './products/products.module';
-import { OrdersModule } from './orders/orders.module';
 // import { AuthMiddleware } from './auth/auth.middleware';
 import { PesapalModule } from './pesapal/pesapal.module';
 @Module({
@@ -59,6 +58,7 @@ import { PesapalModule } from './pesapal/pesapal.module';
           port: 3002,
         },
       },
+      
     ]),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -77,7 +77,6 @@ import { PesapalModule } from './pesapal/pesapal.module';
     PaymentsModule,
     NotificationsModule,
     ProductsModule,
-    OrdersModule,
     PesapalModule,
   ],
   controllers: [AppController, PaymentsController],

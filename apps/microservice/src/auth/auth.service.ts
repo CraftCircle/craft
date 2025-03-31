@@ -86,7 +86,7 @@ export class AuthService {
       email: registerData.email,
       name: registerData.name,
       password: hashedPassword,
-      role: registerData.role || Role.USER,
+      role: registerData.role,
       provider: registerData.provider || 'email',
       providerId: registerData.providerId || null,
     });

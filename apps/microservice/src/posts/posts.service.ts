@@ -4,14 +4,12 @@ import { UpdatePostInput } from './dto/update-post.input';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { PostEntity } from './entities/post.entity';
-import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class PostService {
   private readonly logger = new Logger(PostService.name);
   constructor(
     private prismaService: PrismaService,
-    private readonly uploadService: UploadService,
   ) {}
   async createPost(
     { title, content, audio, image, video }: CreatePostInput,

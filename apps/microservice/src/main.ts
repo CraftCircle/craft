@@ -46,8 +46,8 @@ async function bootstrap() {
   await app.startAllMicroservices();
   logger.log('Microservice successfully started on TCP port 3001');
 
-  await app.listen(3000);
-  logger.log('CraftCircle Backend HTTP server listening on port 3000');
+  await app.listen(8080);
+  logger.log('CraftCircle Backend HTTP server listening on port 8080');
 }
 
 bootstrap();

@@ -10,11 +10,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateTicketTypeDTO } from './dto/create-ticket-type.dto';
 import { CreateTicketPurchaseDTO } from './dto/create-ticket-purchase.dto';
 import { UserEntity } from '../users/entities/user.entity';
-import { TicketType as PrismaTicketType, TicketType } from '@prisma/client';
 import { PesapalService } from '../pesapal/pesapal.service';
 import { Logger } from '@nestjs/common';
-import { FileUpload } from 'graphql-upload-minimal';
-import { UploadService } from '../upload/upload.service';
 import { TicketCreatedEntity } from './entities/ticket-created.entity';
 import { TicketPurchasedEntity } from './entities/ticket-purchased.entity';
 import { TicketEntity } from './entities/ticket.entity';
@@ -27,37 +24,27 @@ export class TicketsService {
     // private paymentService: PaymentsService,
     private pesapalService: PesapalService,
     private notificationService: NotificationsService,
-    private uploadService: UploadService,
   ) {}
+
+
+  
 
   /**
    * Creates a new ticket type for an event.
    *
    * @param createTicketTypeDto - Details of the ticket type to create.
    * @param admin - The authenticated admin creating the ticket type.
-   * @param image - The image file for the ticket type.
    * @returns The created ticket type entity.
    */
+
+  
   async createTicketType(
     createTicketTypeDto: CreateTicketTypeDTO,
     admin: UserEntity,
-    image: FileUpload,
   ): Promise<TicketCreatedEntity> {
-    const { ticketType, price, quantity, eventId } = createTicketTypeDto;
+    const { ticketType, price, quantity, eventId, image} = createTicketTypeDto;
 
-    if (!image) {
-      throw new BadRequestException('Image is required for event creation');
-    }
-
-    this.logger.log('Uploading image...');
-    let imageUrl: string;
-    try {
-      imageUrl = await this.uploadService.handleUpload(image);
-      this.logger.log(`Image uploaded successfully: ${imageUrl}`);
-    } catch (error) {
-      this.logger.error('Error during image upload', error);
-      throw new BadRequestException('Image upload failed');
-    }
+  
 
     try {
       // Validate that the event exists and is owned by the admin.
@@ -79,7 +66,7 @@ export class TicketsService {
           ticketType,
           price,
           quantity,
-          image: imageUrl,
+          image,
           event: { connect: { id: eventId } },
         },
       });
