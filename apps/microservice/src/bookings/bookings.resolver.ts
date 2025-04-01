@@ -27,7 +27,7 @@ export class BookingsResolver {
    * Admin creates available booking slots.
    */
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Mutation(() => AvailabilityEntity)
   async setAvailability(
     @Args('input') input: CreateAvailabilityInput,
@@ -40,7 +40,7 @@ export class BookingsResolver {
    * Admin retrieves their own defined slots.
    */
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Query(() => [AvailabilityEntity])
   async getMyAvailability(@CurrentUser() admin: UserEntity) {
     return this.bookingsService.getAvailabilityForAdmin(admin.id);
@@ -75,7 +75,7 @@ export class BookingsResolver {
    * Admin views all bookings made for their slots (paginated).
    */
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @Query(() => [BookingEntity])
   async getAllBookingsForAdmin(
     @CurrentUser() admin: UserEntity,

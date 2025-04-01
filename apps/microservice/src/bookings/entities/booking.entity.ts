@@ -12,7 +12,7 @@ export class BookingEntity {
   @Field(() => String)
   id: string;
 
-  @Field(() => AvailabilityEntity)
+  @Field(() => AvailabilityEntity, {nullable: true})
   availability: AvailabilityEntity;
 
   @Field(() => UserEntity)

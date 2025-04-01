@@ -11,6 +11,8 @@ import { RegisterResponseDTO } from './dto/register-response.dto';
 import { NotificationService } from '../notifications/notifications.service';
 import { RegisterOAuthInput } from './dto/register-oauth.dto';
 import { registrationEmailTemplate } from '../notifications/templates/register';
+import { loginNotificationTemplate } from '../notifications/templates/login';
+import { formatDateTime } from '../utils/format-datetime';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
@@ -50,13 +52,20 @@ export class AuthService {
       loginInput.password,
     );
 
+    const { dateStr, timeStr } = formatDateTime(new Date());
+
     await this.notificationService.send({
       recipientId: user.id,
       title: 'Login Notification',
       message: `You logged into your CraftCircle account.`,
       category: NotificationCategory.General,
       types: [NotificationType.Email],
-      additionalData: {},
+      additionalData: {
+        template: loginNotificationTemplate(
+          user.name,
+          `${dateStr} at ${timeStr}`,
+        ),
+      },
     });
 
     const payload = { email: user.email, sub: user.id, role: user.role };
@@ -107,7 +116,7 @@ export class AuthService {
       category: NotificationCategory.General,
       types: [NotificationType.Email, NotificationType.InApp],
       additionalData: {
-        template: registrationEmailTemplate(newUser.name)
+        template: registrationEmailTemplate(newUser.name),
       },
     });
 

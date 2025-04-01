@@ -118,8 +118,6 @@ export class BookingsService {
       location: 'Online / Custom location',
     };
 
-    const icsBuffer = createICSFile(calendarEvent);
-
     // Notify user
     await this.notificationService.send({
       recipientId: booking.user.id,
@@ -224,13 +222,81 @@ export class BookingsService {
       throw new NotFoundException('Booking not found or unauthorized');
     }
 
-    return this.prisma.booking.update({
+    // Update the booking
+    const updated = await this.prisma.booking.update({
       where: { id: bookingId },
       data: {
         availabilityId: newAvailabilityId,
         status: BookingStatus.PENDING,
         notes,
       },
+      include: {
+        user: true,
+        availability: { include: { admin: true } },
+      },
     });
+
+    // Format date/time
+    const start = new Date(updated.availability.startTime);
+    const end = new Date(updated.availability.endTime);
+    const dateStr = start.toLocaleDateString(undefined, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const timeStr = start.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const link = `https://craftcirclehq.com/bookings/${updated.id}`;
+    const calendarEvent = {
+      title: 'Rescheduled Booking - CraftCircle',
+      description: `Rescheduled with ${updated.availability.admin.name}`,
+      start,
+      end,
+      location: 'Online / Custom location',
+    };
+
+    // Send to user
+    await this.notificationService.send({
+      recipientId: updated.user.id,
+      title: '🔁 Booking Rescheduled',
+      message: `Your booking has been successfully rescheduled.`,
+      category: NotificationCategory.General,
+      types: [NotificationType.Email, NotificationType.InApp],
+      additionalData: {
+        template: bookingUserTemplate(
+          updated.user.name,
+          dateStr,
+          timeStr,
+          updated.availability.admin.name,
+          link,
+        ),
+        calendarEvent,
+      },
+    });
+
+    // Notify admin
+    await this.notificationService.send({
+      recipientId: updated.availability.admin.id,
+      title: '📅 Booking Rescheduled',
+      message: `${updated.user.name} rescheduled their booking.`,
+      category: NotificationCategory.General,
+      types: [NotificationType.Email, NotificationType.InApp],
+      additionalData: {
+        template: bookingAdminTemplate(
+          updated.availability.admin.name,
+          updated.user.name,
+          dateStr,
+          timeStr,
+          link,
+        ),
+        calendarEvent,
+      },
+    });
+
+    return updated;
   }
 }

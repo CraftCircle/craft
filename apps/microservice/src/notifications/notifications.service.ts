@@ -126,15 +126,17 @@ export class NotificationService {
 
       const template =
         body.additionalData?.template || this.defaultEmailHTML(body.message);
-      const calendarEvent = body.additionalData?.calendarEvent;
+      const attachments: {
+        filename: string;
+        content: Buffer;
+        contentType: string;
+      }[] = [];
 
-      const attachments = [];
-
-      if (calendarEvent) {
-        const icsBuffer = createICSFile(calendarEvent);
+      if (body.additionalData?.calendarEvent) {
+        const calendarBuffer = createICSFile(body.additionalData.calendarEvent);
         attachments.push({
           filename: 'booking.ics',
-          content: icsBuffer,
+          content: calendarBuffer,
           contentType: 'text/calendar',
         });
       }
