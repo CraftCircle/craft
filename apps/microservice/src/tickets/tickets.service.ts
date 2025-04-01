@@ -15,6 +15,9 @@ import { Logger } from '@nestjs/common';
 import { TicketCreatedEntity } from './entities/ticket-created.entity';
 import { TicketPurchasedEntity } from './entities/ticket-purchased.entity';
 import { TicketEntity } from './entities/ticket.entity';
+import { ticketPurchaseTemplate } from '../notifications/templates/ticket';
+import { NotificationCategory, NotificationType } from '@prisma/client';
+import { ticketCreatedTemplate } from '../notifications/templates/ticket';
 
 @Injectable()
 export class TicketsService {
@@ -26,9 +29,6 @@ export class TicketsService {
     private notificationService: NotificationService,
   ) {}
 
-
-  
-
   /**
    * Creates a new ticket type for an event.
    *
@@ -37,14 +37,11 @@ export class TicketsService {
    * @returns The created ticket type entity.
    */
 
-  
   async createTicketType(
     createTicketTypeDto: CreateTicketTypeDTO,
     admin: UserEntity,
   ): Promise<TicketCreatedEntity> {
-    const { ticketType, price, quantity, eventId, image} = createTicketTypeDto;
-
-  
+    const { ticketType, price, quantity, eventId, image } = createTicketTypeDto;
 
     try {
       // Validate that the event exists and is owned by the admin.
@@ -61,7 +58,7 @@ export class TicketsService {
       }
 
       // Create the ticket type.
-      return await this.prisma.ticketType.create({
+      const createdTicketType = await this.prisma.ticketType.create({
         data: {
           ticketType,
           price,
@@ -70,6 +67,27 @@ export class TicketsService {
           event: { connect: { id: eventId } },
         },
       });
+
+      // Send notification about the new ticket type creation
+      await this.notificationService.send({
+        recipientId: admin.id,
+        title: `🎫 Ticket Created for ${event.name}`,
+        message: `You have successfully created a ticket type "${ticketType}" for the event "${event.name}".`,
+        category: NotificationCategory.Ticket,
+        types: [NotificationType.InApp, NotificationType.Email],
+        additionalData: {
+          template: ticketCreatedTemplate(
+            admin.name,
+            ticketType,
+            event.name,
+            price,
+            quantity,
+            `https://craftcirclehq.com/events/${event.id}`,
+          ),
+        },
+      });
+
+      return createdTicketType;
     } catch (error) {
       throw new InternalServerErrorException('Failed to create ticket type');
     }
@@ -168,6 +186,21 @@ export class TicketsService {
           eventId,
           userId: user.id,
           scanned: false,
+        },
+      });
+      await this.notificationService.send({
+        recipientId: user.id,
+        title: '🎟️ Ticket Purchase Initiated',
+        message: `Hey ${user.name}, your ticket reservation for "${event.name}" has been created. Please complete payment.`,
+        category: NotificationCategory.Ticket,
+        types: [NotificationType.InApp, NotificationType.Email],
+        additionalData: {
+          template: ticketPurchaseTemplate(
+            user.name,
+            ticketType.ticketType,
+            event.name,
+            `https://craftcirclehq.com/tickets/${reservation.id}`,
+          ),
         },
       });
 

@@ -4,12 +4,18 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UpdateEventInput } from './dto/update-event.input';
 import { EventEntity } from './entities/event.entity';
 import { UserEntity } from '../users/entities/user.entity';
+import { NotificationService } from '../notifications/notifications.service';
+import { NotificationCategory, NotificationType } from '@prisma/client';
+import { eventCreationTemplate } from '../notifications/templates/event';
 
 @Injectable()
 export class EventsService {
   private readonly logger = new Logger(EventsService.name);
 
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   /**
    * Creates a new event.
@@ -31,19 +37,36 @@ export class EventsService {
     user: UserEntity,
   ) {
     this.logger.log('Creating An Event...');
-
-    return this.prismaService.event.create({
+    const event = await this.prismaService.event.create({
       data: {
-        date,
         name,
         description,
         image,
         location,
         startTime,
         endTime,
+        date,
         creatorId: user.id,
       },
     });
+
+    // ✅ Send notification after event is created
+    await this.notificationService.send({
+      recipientId: user.id,
+      title: '🎉 Your event is live!',
+      message: `Hey ${user.name}, your event "${event.name}" has been successfully created.`,
+      category: NotificationCategory.Event,
+      types: [NotificationType.Email, NotificationType.InApp],
+      additionalData: {
+        template: eventCreationTemplate(
+          user.name,
+          event.name,
+          `https://craftcirclehq.com/events/${event.id}`,
+        ),
+      },
+    });
+
+    return event;
   }
 
   /**

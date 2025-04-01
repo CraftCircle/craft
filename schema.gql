@@ -17,7 +17,7 @@ input CreateEventInput {
   date: DateTime!
   description: String!
   endTime: DateTime!
-  image: Upload
+  image: String
   location: String!
   name: String!
   startTime: DateTime!
@@ -151,7 +151,7 @@ type Mutation {
   UpdateTicketTypeQuantity(quantity: Int!, ticketId: String!): TicketCreatedEntity!
   cancelOrder(orderTrackingId: String!): String!
   changeUserRole(id: String!, newRole: Role!): UserEntity!
-  createEvent(createEventInput: CreateEventInput!, image: Upload!): EventEntity!
+  createEvent(createEventInput: CreateEventInput!): EventEntity!
   createPayment(createPaymentInput: CreatePaymentInput!): CreatePaymentAuth!
   createPost(createPostInput: CreatePostInput!): PostEntity!
   createProduct(createProductInput: CreateProductInput!): Product!
@@ -169,10 +169,11 @@ type Mutation {
   requestRefund(refundPayload: RefundRequestDTO!): String!
   singleUpload(file: Upload!): String!
   submitOrder(orderPayload: CreatePesapalOrderDTO!): String!
-  updateEvent(id: String!, image: Upload, updateEventInput: UpdateEventInput!): EventEntity!
+  updateEvent(id: String!, updateEventInput: UpdateEventInput!): EventEntity!
   updatePost(updatePostInput: UpdatePostInput!): PostEntity!
   updateProduct(updateProductInput: UpdateProductInput!): Product!
   updateUser(email: String!, updateUserInput: UpdateUserDto!): UserEntity!
+  uploadEventImage(file: Upload!): String!
   uploadPostImage(file: Upload!): String!
   uploadProductImage(file: Upload!): String!
   uploadTicketImage(file: Upload!): String!
@@ -322,7 +323,7 @@ input UpdateEventInput {
   date: DateTime
   description: String
   endTime: DateTime
-  image: Upload
+  image: String
   location: String
   name: String
   startTime: DateTime

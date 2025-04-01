@@ -162,6 +162,7 @@ enum NotificationStatus {
 enum NotificationCategory {
   General
   Transaction
+  Event
   Post
   Ticket
   Product

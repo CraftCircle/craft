@@ -8,10 +8,16 @@ import { UpdateProductInput } from './dto/update-product.input';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { UserEntity } from '../users/entities/user.entity';
+import { NotificationService } from '../notifications/notifications.service';
+import { NotificationCategory, NotificationType } from '@prisma/client';
+import { productCreationTemplate } from '../notifications/templates/product';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   // Create a new product
   async createProduct(
@@ -21,9 +27,28 @@ export class ProductsService {
     if (user.role !== Role.ADMIN) {
       throw new ForbiddenException('Only admins can create products');
     }
-    return this.prisma.product.create({
+
+    const product = await this.prisma.product.create({
       data: { ...createProductInput, ownerId: user.id },
     });
+
+    // ✅ Notify creator
+    await this.notificationService.send({
+      recipientId: user.id,
+      title: '🛒 Product Created',
+      message: `Hey ${user.name}, your product "${product.name}" is now listed on CraftCircle.`,
+      category: NotificationCategory.Product,
+      types: [NotificationType.InApp, NotificationType.Email],
+      additionalData: {
+        template: productCreationTemplate(
+          user.name,
+          product.name,
+          `https://craftcirclehq.com/products/${product.id}`,
+        ),
+      },
+    });
+
+    return product;
   }
   // Retrieve all products
   async getProducts() {
