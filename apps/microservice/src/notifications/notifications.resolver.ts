@@ -1,35 +1,32 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
-import { NotificationsService } from './notifications.service';
-import { Notification } from './entities/notification.entity';
-import { CreateNotificationInput } from './dto/create-notification.input';
-import { UpdateNotificationInput } from './dto/update-notification.input';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { NotificationService } from './notifications.service';
+import { NotificationEntity } from './entities/notification.entity';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserEntity } from '../users/entities/user.entity';
+import { GetNotificationsInput, MarkAsReadInput } from './dto/notification-pagination.dto';
 
-@Resolver(() => Notification)
-export class NotificationsResolver {
-  constructor(private readonly notificationsService: NotificationsService) {}
+@Resolver(() => NotificationEntity)
+export class NotificationResolver {
+  constructor(private readonly notificationsService: NotificationService) {}
 
-  @Mutation(() => Notification)
-  createNotification(@Args('createNotificationInput') createNotificationInput: CreateNotificationInput) {
-    // return this.notificationsService.create(createNotificationInput);
+  @UseGuards(JwtAuthGuard)
+  @Query(() => [NotificationEntity])
+  async getMyNotifications(
+    @Args('filter', { type: () => GetNotificationsInput }) filter: GetNotificationsInput,
+    @CurrentUser() user: UserEntity,
+  ) {
+    return this.notificationsService.getUserNotifications(user.id, filter.page, filter.limit);
   }
 
-  @Query(() => [Notification], { name: 'notifications' })
-  findAll() {
-    return this.notificationsService.findAll();
-  }
-
-  @Query(() => Notification, { name: 'notification' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.notificationsService.findOne(id);
-  }
-
-  @Mutation(() => Notification)
-  updateNotification(@Args('updateNotificationInput') updateNotificationInput: UpdateNotificationInput) {
-    return this.notificationsService.update(updateNotificationInput.id, updateNotificationInput);
-  }
-
-  @Mutation(() => Notification)
-  removeNotification(@Args('id', { type: () => Int }) id: number) {
-    return this.notificationsService.remove(id);
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Boolean)
+  async markNotificationAsRead(
+    @Args('input') input: MarkAsReadInput,
+    @CurrentUser() user: UserEntity,
+  ) {
+    await this.notificationsService.markAsRead(user.id, input.notificationId);
+    return true;
   }
 }

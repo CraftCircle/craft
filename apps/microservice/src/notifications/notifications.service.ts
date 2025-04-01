@@ -1,138 +1,176 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { CreateNotificationInput } from './dto/create-notification.input';
-import { UpdateNotificationInput } from './dto/update-notification.input';
-import * as nodemailer from 'nodemailer';
-import * as Brevo from '@getbrevo/brevo';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import {
+  NotificationCategory,
+  NotificationStatus,
+  NotificationType,
+} from '@prisma/client';
+import nodemailer from 'nodemailer';
 
-import { ConfigService } from '@nestjs/config';
+type NotificationBody = {
+  message: string;
+  additionalData?: object;
+};
 
 @Injectable()
-export class NotificationsService {
-  private readonly logger = new Logger(NotificationsService.name);
-  private readonly emailApi: Brevo.TransactionalEmailsApi;
+export class NotificationService {
+  private readonly logger = new Logger(NotificationService.name);
 
-  constructor(private readonly configService: ConfigService) {
-    // Initialize the Transactional Emails API and set the API key
-    this.emailApi = new Brevo.TransactionalEmailsApi();
-    const apiKey = this.configService.get<string>('BREVO_API_KEY');
-    this.emailApi.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey);
+  private transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SENDER_EMAIL,
+      pass: process.env.SENDER_PASSWORD,
+    },
+  });
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  async send({
+    recipientId,
+    title,
+    message,
+    category,
+    types = [NotificationType.InApp],
+    additionalData,
+  }: {
+    recipientId: string;
+    title: string;
+    message: string;
+    category: NotificationCategory;
+    types?: NotificationType[];
+    additionalData?: object;
+  }) {
+    const body: NotificationBody = { message, additionalData };
+    const results = [];
+
+    if (types.includes(NotificationType.InApp)) {
+      results.push(
+        await this.sendInAppNotification(recipientId, title, body, category),
+      );
+    }
+
+    if (types.includes(NotificationType.Email)) {
+      results.push(
+        await this.sendEmailNotification(recipientId, title, body, category),
+      );
+    }
+
+    return results;
   }
 
-  /**
-   * Send registration confirmation email
-   */
-  async sendRegistrationNotification(
-    userEmail: string,
-    userName: string,
-  ): Promise<void> {
-    const subject = 'Welcome To CraftCircle!';
-    const templateId = 2;
-    const params = { name: userName };
-
-    await this.sendEmail(userEmail, userName, subject, params, templateId);
-  }
-
-  /**
-   * Send login notification email
-   */
-  async sendLoginNotification(
-    userEmail: string,
-    userName: string,
-    loginTime: string,
-    // ipAddress: string,
-  ): Promise<void> {
-    const subject = 'Login Alert Tor Your CraftCircle Account';
-    const templateId = 2;
-    const params = {
-      name: userName,
-      loginTime,
-      // ipAddress,
-    };
-
-    await this.sendEmail(userEmail, userName, subject, params, templateId);
-  }
-
-  /**
-   * General method to send transactional emails via Brevo
-   */
-  private async sendEmail(
-    toEmail: string,
-    toName: string,
-    subject: string,
-    params: Record<string, any>,
-    templateId: number,
-  ): Promise<void> {
-    const senderEmail = this.configService.get<string>('BREVO_SENDER_EMAIL');
-    const senderName = this.configService.get<string>('BREVO_SENDER_NAME');
-
-    // Initialize SendSmtpEmail instance and set properties individually
-    const sendSmtpEmail = new Brevo.SendSmtpEmail();
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.templateId = templateId;
-    sendSmtpEmail.sender = { email: senderEmail, name: senderName };
-    sendSmtpEmail.to = [{ email: toEmail, name: toName }];
-    sendSmtpEmail.params = params;
-
+  async sendInAppNotification(
+    recipientId: string,
+    title: string,
+    body: NotificationBody,
+    category: NotificationCategory,
+    externalError: any = null,
+  ) {
     try {
-      await this.emailApi.sendTransacEmail(sendSmtpEmail);
-      this.logger.log(`Email sent successfully to ${toEmail}`);
+      return await this.prisma.notification.create({
+        data: {
+          title,
+          body,
+          status: NotificationStatus.Unread,
+          category,
+          type: NotificationType.InApp,
+          user: { connect: { id: recipientId } },
+          externalError,
+        },
+      });
     } catch (error) {
-      this.logger.error(`Failed to send email to ${toEmail}: ${error.message}`);
-      throw error;
+      this.logger.error('Failed to send in-app notification', error);
+      throw new InternalServerErrorException(
+        'Could not send in-app notification',
+      );
     }
   }
 
-  /**
-   * Send ticket purchase notification email
-   */
-  async sendTicketNotification(ticket: any): Promise<void> {
-    const subject = `Your Ticket for ${ticket.eventName} is Confirmed!`;
-    const templateId = 789; // Replace with your Brevo template ID for ticket purchase
-    const params = {
-      name: ticket.name,
-      eventName: ticket.eventName,
-      quantity: ticket.quantity,
-      price: ticket.price,
-      ticketType: ticket.ticketType,
-      transactionId: ticket.transactionId,
-    };
-
-    const senderEmail = this.configService.get<string>('BREVO_SENDER_EMAIL');
-    const senderName = this.configService.get<string>('BREVO_SENDER_NAME');
-
-    const sendSmtpEmail = new Brevo.SendSmtpEmail();
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.templateId = templateId;
-    sendSmtpEmail.sender = { email: senderEmail, name: senderName };
-    sendSmtpEmail.to = [{ email: ticket.email, name: ticket.name }];
-    sendSmtpEmail.params = params;
-
+  async sendEmailNotification(
+    recipientId: string,
+    title: string,
+    body: NotificationBody,
+    category: NotificationCategory,
+    externalError: any = null,
+  ) {
     try {
-      const response = await this.emailApi.sendTransacEmail(sendSmtpEmail);
-      this.logger.log(
-        `Ticket purchase notification sent successfully to ${ticket.email}: ${JSON.stringify(response)}`,
-      );
+      this.validateEnvVariables();
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: recipientId },
+        select: { email: true },
+      });
+
+      if (!user?.email) {
+        this.logger.warn(`No email found for user ID: ${recipientId}`);
+        return;
+      }
+
+      const html = `
+        <h1>${title}</h1>
+        <p>${body.message}</p>
+      `;
+
+      await this.transporter.sendMail({
+        from: process.env.SENDER_EMAIL,
+        to: user.email,
+        subject: title,
+        text: body.message,
+        html,
+      });
+
+      return await this.prisma.notification.create({
+        data: {
+          title,
+          body,
+          status: NotificationStatus.Unread,
+          category,
+          type: NotificationType.Email,
+          user: { connect: { id: recipientId } },
+          externalError,
+        },
+      });
     } catch (error) {
-      this.logger.error(
-        `Failed to send ticket notification to ${ticket.email}: ${error.message}`,
+      this.logger.error('Failed to send email notification', error);
+      throw new InternalServerErrorException(
+        'Could not send email notification',
       );
-      throw error;
     }
   }
 
-  findAll() {
-    return `This action returns all notifications`;
+  async getUserNotifications(userId: string, page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    return this.prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} notification`;
+  async markAsRead(userId: string, notificationId: string) {
+    return this.prisma.notification.updateMany({
+      where: {
+        id: notificationId,
+        userId,
+      },
+      data: {
+        status: NotificationStatus.Read,
+      },
+    });
   }
 
-  update(id: number, updateNotificationInput: UpdateNotificationInput) {
-    return `This action updates a #${id} notification`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} notification`;
+  private validateEnvVariables() {
+    if (!process.env.SENDER_EMAIL || !process.env.SENDER_PASSWORD) {
+      throw new Error(
+        'Missing SMTP config: SENDER_EMAIL and SENDER_PASSWORD must be set',
+      );
+    }
   }
 }

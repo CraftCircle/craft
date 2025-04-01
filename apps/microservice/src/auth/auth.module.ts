@@ -6,11 +6,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtStrategy } from './strategy/jwt.strategy';
-// import { LocalStrategy } from './strategy/local.strategy';
 import { UserModule } from '../users/users.module';
 import { RolesGuard } from './guards/roles.guard';
 import { JwtAuthGuard } from './guards/jwt.guard';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationService } from '../notifications/notifications.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
   imports: [
@@ -36,7 +36,8 @@ import { NotificationsService } from '../notifications/notifications.service';
   ],
   controllers: [AuthController],
   providers: [AuthService, 
-    NotificationsService,
+    NotificationService,
+    PrismaService,
     JwtAuthGuard,    
     RolesGuard, 
     JwtStrategy

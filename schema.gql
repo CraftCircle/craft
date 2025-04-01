@@ -23,11 +23,6 @@ input CreateEventInput {
   startTime: DateTime!
 }
 
-input CreateNotificationInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
 type CreatePaymentAuth {
   access_token: String
   expires_in: String!
@@ -124,6 +119,16 @@ type EventEntity {
   startTime: DateTime!
 }
 
+input GetNotificationsInput {
+  limit: Int! = 10
+  page: Int! = 1
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
 input LoginRequestDTO {
   email: String!
   password: String!
@@ -132,6 +137,10 @@ input LoginRequestDTO {
 type LoginResponseDTO {
   access_token: String!
   user: UserEntity!
+}
+
+input MarkAsReadInput {
+  notificationId: String!
 }
 
 type Mutation {
@@ -143,7 +152,6 @@ type Mutation {
   cancelOrder(orderTrackingId: String!): String!
   changeUserRole(id: String!, newRole: Role!): UserEntity!
   createEvent(createEventInput: CreateEventInput!, image: Upload!): EventEntity!
-  createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   createPayment(createPaymentInput: CreatePaymentInput!): CreatePaymentAuth!
   createPost(createPostInput: CreatePostInput!): PostEntity!
   createProduct(createProductInput: CreateProductInput!): Product!
@@ -151,18 +159,17 @@ type Mutation {
   deleteEvent(id: String!): Boolean!
   deleteProduct(id: String!): Product!
   login(loginInput: LoginRequestDTO!): LoginResponseDTO!
+  markNotificationAsRead(input: MarkAsReadInput!): Boolean!
   multipleUpload(files: [Upload!]!): [String!]!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
   registerIPN(ipnNotificationType: String!, ipnUrl: String!): String!
   registerUrl: String!
-  removeNotification(id: Int!): Notification!
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
   requestRefund(refundPayload: RefundRequestDTO!): String!
   singleUpload(file: Upload!): String!
   submitOrder(orderPayload: CreatePesapalOrderDTO!): String!
   updateEvent(id: String!, image: Upload, updateEventInput: UpdateEventInput!): EventEntity!
-  updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
   updatePost(updatePostInput: UpdatePostInput!): PostEntity!
   updateProduct(updateProductInput: UpdateProductInput!): Product!
   updateUser(email: String!, updateUserInput: UpdateUserDto!): UserEntity!
@@ -171,9 +178,36 @@ type Mutation {
   uploadTicketImage(file: Upload!): String!
 }
 
-type Notification {
-  """Example field (placeholder)"""
-  exampleField: Int!
+enum NotificationCategory {
+  General
+  Post
+  Product
+  Ticket
+  Transaction
+}
+
+type NotificationEntity {
+  body: JSON!
+  category: NotificationCategory!
+  createdAt: DateTime!
+  externalError: JSON
+  id: String!
+  readAt: DateTime!
+  status: NotificationStatus!
+  title: String!
+  type: NotificationType!
+}
+
+enum NotificationStatus {
+  Read
+  Sent
+  Unread
+}
+
+enum NotificationType {
+  Email
+  InApp
+  Push
 }
 
 type PostEntity {
@@ -205,10 +239,9 @@ type Query {
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!
   getAccessToken: String!
+  getMyNotifications(filter: GetNotificationsInput!): [NotificationEntity!]!
   getRegisteredIPNs: [String!]!
   getTransactionStatus(orderTrackingId: String!): String!
-  notification(id: Int!): Notification!
-  notifications: [Notification!]!
   post(id: String!): PostEntity!
   posts: [PostEntity!]!
   product(id: String!): Product!
@@ -257,7 +290,7 @@ type TicketCreatedEntity {
 
 type TicketEntity {
   eventId: String!
-  id: ID!
+  id: String!
   price: Float!
   quantity: Int!
   ticketType: TicketTypeEnum!
@@ -293,12 +326,6 @@ input UpdateEventInput {
   location: String
   name: String
   startTime: DateTime
-}
-
-input UpdateNotificationInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
 }
 
 input UpdatePostInput {

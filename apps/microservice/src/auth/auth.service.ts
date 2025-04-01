@@ -4,12 +4,14 @@ import * as bcrypt from 'bcrypt';
 import { UserEntity } from '../../src/users/entities/user.entity';
 import { UserService } from '../../src/users/users.service';
 import { RegisterRequestDTO } from '../../src/auth/dto/register-request.dto';
-import { Role } from '@prisma/client';
+import { NotificationCategory, NotificationType, Role } from '@prisma/client';
 import { LoginRequestDTO } from './dto/login-request.dto';
 import { LoginResponseDTO } from './dto/login-response.dto';
 import { RegisterResponseDTO } from './dto/register-response.dto';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationService } from '../notifications/notifications.service';
 import { RegisterOAuthInput } from './dto/register-oauth.dto';
+import { registrationEmailTemplate } from '../notifications/templates/register';
+import { loginNotificationTemplate } from '../notifications/templates/login';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
@@ -18,7 +20,7 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-    private readonly notificationService: NotificationsService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -37,13 +39,6 @@ export class AuthService {
       throw new BadRequestException('Invalid credentials');
     }
 
-    const loginTime = new Date().toISOString();
-    // await this.notificationService.sendLoginNotification(
-    //   user.email,
-    //   user.name,
-    //   loginTime,
-    // );
-
     return user;
   }
 
@@ -55,6 +50,21 @@ export class AuthService {
       loginInput.email,
       loginInput.password,
     );
+
+    await this.notificationService.send({
+      recipientId: user.id,
+      title: 'Login Notification',
+      message: `You logged into your CraftCircle account.`,
+      category: NotificationCategory.General,
+      types: [NotificationType.Email],
+      additionalData: {
+        template: loginNotificationTemplate(
+          user.name,
+          new Date().toLocaleString(),
+          // requestIp,
+        ),
+      },
+    });
 
     const payload = { email: user.email, sub: user.id, role: user.role };
     return {
@@ -97,10 +107,16 @@ export class AuthService {
       role: newUser.role,
     });
 
-    // await this.notificationService.sendRegistrationNotification(
-    //   newUser.email,
-    //   newUser.name,
-    // );
+    await this.notificationService.send({
+      recipientId: newUser.id,
+      title: 'Welcome to CraftCircle!',
+      message: `Hey ${newUser.name}, welcome aboard!`,
+      category: NotificationCategory.General,
+      types: [NotificationType.Email, NotificationType.InApp],
+      additionalData: {
+        template: registrationEmailTemplate(newUser.name),
+      },
+    });
 
     return {
       access_token: token,

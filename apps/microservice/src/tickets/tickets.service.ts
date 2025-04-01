@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationService } from '../notifications/notifications.service';
 // import { PaymentsService } from '../payments/payments.service';
 import { CreateTicketTypeDTO } from './dto/create-ticket-type.dto';
 import { CreateTicketPurchaseDTO } from './dto/create-ticket-purchase.dto';
@@ -23,7 +23,7 @@ export class TicketsService {
     private prisma: PrismaService,
     // private paymentService: PaymentsService,
     private pesapalService: PesapalService,
-    private notificationService: NotificationsService,
+    private notificationService: NotificationService,
   ) {}
 
 
