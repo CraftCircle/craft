@@ -126,7 +126,7 @@ export class NotificationService {
           .content { margin-top: 20px; padding: 20px; text-align: center; }
           .logo { display: block; margin: 0 auto 20px; max-width: 150px; }
           .footer { font-size: 12px; text-align: center; color: #999999; margin-top: 40px; }
-          .button { background-color: #D6FC3E; color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; font-weight: bold; }
+          .button { background-color:rgb(184, 153, 52); color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; font-weight: bold; }
         </style>
       </head>
       <body>
