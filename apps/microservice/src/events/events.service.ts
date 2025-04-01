@@ -1,53 +1,47 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateEventInput } from './dto/create-event.input';
 import { PrismaService } from '../prisma/prisma.service';
-import { UploadService } from '../upload/upload.service';
-import { FileUpload } from 'graphql-upload-minimal';
 import { UpdateEventInput } from './dto/update-event.input';
 import { EventEntity } from './entities/event.entity';
+import { UserEntity } from '../users/entities/user.entity';
 
 @Injectable()
 export class EventsService {
   private readonly logger = new Logger(EventsService.name);
 
-  constructor(
-    private prismaService: PrismaService,
-    private uploadService: UploadService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
   /**
    * Creates a new event.
    *
    * @param createEventInput - The event details provided by the admin.
    * @param creatorId - The ID of the admin creating the event.
-   * @param image - The image file for the event.
    * @returns The created event entity.
    */
-  async create(
-    createEventInput: CreateEventInput,
-    creatorId: string,
-    image: FileUpload,
+  async createEvent(
+    {
+      name,
+      description,
+      image,
+      location,
+      startTime,
+      endTime,
+      date,
+    }: CreateEventInput,
+    user: UserEntity,
   ) {
-    if (!image) {
-      throw new BadRequestException('Image is required for event creation');
-    }
-
-    this.logger.log('Uploading image...');
-    let imageUrl: string;
-
-    try {
-      imageUrl = await this.uploadService.handleUpload(image);
-      this.logger.log(`Image uploaded successfully: ${imageUrl}`);
-    } catch (error) {
-      this.logger.error('Error during image upload', error);
-      throw new BadRequestException('Image upload failed');
-    }
+    this.logger.log('Creating An Event...');
 
     return this.prismaService.event.create({
       data: {
-        ...createEventInput,
-        image: imageUrl,
-        creatorId,
+        date,
+        name,
+        description,
+        image,
+        location,
+        startTime,
+        endTime,
+        creatorId: user.id,
       },
     });
   }
@@ -57,32 +51,13 @@ export class EventsService {
    *
    * @param id - The ID of the event to update.
    * @param updateEventInput - The updated event details.
-   * @param image - Optional new image file for the event.
    * @returns The updated event entity.
    */
-  async update(
-    id: string,
-    updateEventInput: UpdateEventInput,
-    image?: FileUpload,
-  ) {
-    let imageUrl: string | undefined;
-
-    if (image) {
-      this.logger.log('Uploading new image...');
-      try {
-        imageUrl = await this.uploadService.handleUpload(image);
-        this.logger.log(`Image uploaded successfully: ${imageUrl}`);
-      } catch (error) {
-        this.logger.error('Error during image upload', error);
-        throw new BadRequestException('Image upload failed');
-      }
-    }
-
+  async update(id: string, updateEventInput: UpdateEventInput) {
     return this.prismaService.event.update({
       where: { id },
       data: {
         ...updateEventInput,
-        ...(imageUrl && { image: imageUrl }),
       },
     });
   }

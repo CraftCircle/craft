@@ -11,16 +11,39 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { FileUpload, GraphQLUpload } from 'graphql-upload-minimal';
 import { UpdateEventInput } from './dto/update-event.input';
+import { UploadService } from '../upload/upload.service';
+import { UploadHelper } from '../upload/utils/upload-helper';
 
 @Resolver(() => EventEntity)
 export class EventsResolver {
-  constructor(private readonly eventsService: EventsService) {}
+  constructor(
+    private readonly eventsService: EventsService,
+    private readonly uploadService: UploadService,
+  ) {}
+
+   /**
+     * Uploads a event image file (optional media for a event).
+     * This should be called before `createEvent`, and the returned
+     * Cloudinary URL used in the `createEventInput.image` field.
+     *
+     * @param file - Image file to upload.
+     * @returns Cloudinary URL of the uploaded image.
+     */
+    @Mutation(() => String, { name: 'uploadEventImage' })
+    @Roles(Role.ADMIN, Role.SUPERADMIN, Role.USER)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    async uploadEventImage(
+      @Args({ name: 'file', type: () => GraphQLUpload }) file: FileUpload,
+    ): Promise<string> {
+      const uploader = new UploadHelper(this.uploadService);
+      const { image } = await uploader.uploadFields({ image: file });
+      return image;
+    }
 
   /**
    * Mutation to create a new event.
    *
    * @param createEventInput - Details of the event to create.
-   * @param image - The image file for the event.
    * @param admin - The authenticated admin creating the event.
    * @returns The created event entity.
    *
@@ -32,10 +55,9 @@ export class EventsResolver {
   @UseGuards(JwtAuthGuard, RolesGuard)
   createEvent(
     @Args('createEventInput') createEventInput: CreateEventInput,
-    @Args({ name: 'image', type: () => GraphQLUpload }) image: FileUpload,
     @CurrentUser() admin: UserEntity,
   ) {
-    return this.eventsService.create(createEventInput, admin.id, image);
+    return this.eventsService.createEvent(createEventInput, admin);
   }
 
   /**
@@ -94,10 +116,8 @@ export class EventsResolver {
   async updateEvent(
     @Args('id', { type: () => String }) id: string,
     @Args('updateEventInput') updateEventInput: UpdateEventInput,
-    @Args({ name: 'image', type: () => GraphQLUpload, nullable: true })
-    image?: FileUpload,
   ) {
-    return this.eventsService.update(id, updateEventInput, image);
+    return this.eventsService.update(id, updateEventInput);
   }
 
   /**

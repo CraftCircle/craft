@@ -1,5 +1,4 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { GraphQLUpload, FileUpload } from 'graphql-upload-minimal';
 
 @InputType()
 export class CreateEventInput {
@@ -21,6 +20,6 @@ export class CreateEventInput {
   @Field()
   location: string;
 
-  @Field(() => GraphQLUpload, { nullable: true }) // Support image uploads
-  image?: FileUpload;
+  @Field({ nullable: true })
+  image?: string;
 }
