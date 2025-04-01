@@ -1,4 +1,3 @@
-// templates/login.ts
 import { baseEmailLayout } from './baseLayout';
 
 export const loginNotificationTemplate = (

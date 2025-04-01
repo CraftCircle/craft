@@ -11,7 +11,6 @@ import {
   NotificationCategory,
   NotificationType,
 } from '@prisma/client';
-import { UpdateAppointmentInput } from './dto/update-appointment';
 import { NotificationService } from '../notifications/notifications.service';
 import {
   bookingUserTemplate,

@@ -10,6 +10,7 @@ import { LoginResponseDTO } from './dto/login-response.dto';
 import { RegisterResponseDTO } from './dto/register-response.dto';
 import { NotificationService } from '../notifications/notifications.service';
 import { RegisterOAuthInput } from './dto/register-oauth.dto';
+import { registrationEmailTemplate } from '../notifications/templates/register';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
@@ -101,11 +102,13 @@ export class AuthService {
 
     await this.notificationService.send({
       recipientId: newUser.id,
-      title: 'Welcome to CraftCircle!',
+      title: '🎉 🎉 Welcome to CraftCircle!🎉 🎉 ',
       message: `Hey ${newUser.name}, welcome aboard!`,
       category: NotificationCategory.General,
       types: [NotificationType.Email, NotificationType.InApp],
-      additionalData: {},
+      additionalData: {
+        template: registrationEmailTemplate(newUser.name)
+      },
     });
 
     return {

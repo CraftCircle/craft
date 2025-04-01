@@ -1,4 +1,3 @@
-// templates/baseEmailLayout.ts
 export const baseEmailLayout = (subject: string, content: string): string => {
     return `
       <!DOCTYPE html>
