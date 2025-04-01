@@ -24,12 +24,8 @@ model User {
   product      Product[]
   Transaction  Transaction[]
   Notification Notification[]
-}
-
-enum Role {
-  ADMIN
-  USER
-  SUPERADMIN
+  Availability Availability[]
+  Booking      Booking[]
 }
 
 model Event {
@@ -75,8 +71,6 @@ model Transaction {
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 }
-
-
 
 model TicketType {
   id         String         @id @default(uuid()) @map("_id")
@@ -135,6 +129,37 @@ model Notification {
   user          User                 @relation(fields: [userId], references: [id])
 }
 
+model Availability {
+  id        String    @id @default(uuid())
+  adminId   String
+  admin     User      @relation(fields: [adminId], references: [id])
+  startTime DateTime
+  endTime   DateTime
+  dayOfWeek String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
+model Booking {
+  id             String        @id @default(uuid())
+  availabilityId String
+  availability   Availability  @relation(fields: [availabilityId], references: [id])
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  status         BookingStatus @default(PENDING)
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
 enum TransactionStatus {
   PENDING
   CONFIRMED
@@ -147,7 +172,7 @@ enum TicketTypeEnum {
   VIP
 }
 
-enum NotificationType { 
+enum NotificationType {
   InApp
   Email
   Push
@@ -166,4 +191,10 @@ enum NotificationCategory {
   Post
   Ticket
   Product
+}
+
+enum Role {
+  ADMIN
+  USER
+  SUPERADMIN
 }

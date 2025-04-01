@@ -2,6 +2,17 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AvailabilityEntity {
+  admin: UserEntity!
+  appointments: [BookingEntity]
+  createdAt: DateTime!
+  dayOfWeek: String!
+  endTime: DateTime!
+  id: String!
+  startTime: DateTime!
+  updatedAt: DateTime!
+}
+
 input BillingAddressDTO {
   city: String
   country_code: String
@@ -11,6 +22,34 @@ input BillingAddressDTO {
   line_1: String
   phone_number: String
   postal_code: Float
+}
+
+type BookingEntity {
+  availability: AvailabilityEntity!
+  createdAt: DateTime!
+  id: String!
+  notes: String
+  status: BookingStatus!
+  updatedAt: DateTime!
+  user: UserEntity!
+}
+
+enum BookingStatus {
+  CANCELLED
+  COMPLETED
+  CONFIRMED
+  PENDING
+}
+
+input CreateAvailabilityInput {
+  dayOfWeek: String!
+  endTime: DateTime!
+  startTime: DateTime!
+}
+
+input CreateBookingInput {
+  availabilityId: String!
+  notes: String
 }
 
 input CreateEventInput {
@@ -149,6 +188,8 @@ type Mutation {
   PurchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketPurchasedEntity!
   ScanTicket(ticketId: String!): TicketEntity!
   UpdateTicketTypeQuantity(quantity: Int!, ticketId: String!): TicketCreatedEntity!
+  bookAppointment(input: CreateBookingInput!): BookingEntity!
+  cancelMyBooking(bookingId: String!): BookingEntity!
   cancelOrder(orderTrackingId: String!): String!
   changeUserRole(id: String!, newRole: Role!): UserEntity!
   createEvent(createEventInput: CreateEventInput!): EventEntity!
@@ -167,6 +208,8 @@ type Mutation {
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
   requestRefund(refundPayload: RefundRequestDTO!): String!
+  rescheduleBooking(bookingId: String!, input: UpdateAppointmentInput!): BookingEntity!
+  setAvailability(input: CreateAvailabilityInput!): AvailabilityEntity!
   singleUpload(file: Upload!): String!
   submitOrder(orderPayload: CreatePesapalOrderDTO!): String!
   updateEvent(id: String!, updateEventInput: UpdateEventInput!): EventEntity!
@@ -180,6 +223,7 @@ type Mutation {
 }
 
 enum NotificationCategory {
+  Event
   General
   Post
   Product
@@ -240,6 +284,9 @@ type Query {
   findAll: [UserEntity!]!
   findOne(email: String!): UserEntity!
   getAccessToken: String!
+  getAllBookingsForAdmin(limit: Int! = 10, page: Int! = 1): [BookingEntity!]!
+  getMyAvailability: [AvailabilityEntity!]!
+  getMyBookings(limit: Int! = 10, page: Int! = 1): [BookingEntity!]!
   getMyNotifications(filter: GetNotificationsInput!): [NotificationEntity!]!
   getRegisteredIPNs: [String!]!
   getTransactionStatus(orderTrackingId: String!): String!
@@ -317,6 +364,12 @@ enum TicketTypeEnum {
   GENERAL
   STUDENT
   VIP
+}
+
+input UpdateAppointmentInput {
+  newAvailabilityId: String
+  notes: String
+  status: BookingStatus
 }
 
 input UpdateEventInput {

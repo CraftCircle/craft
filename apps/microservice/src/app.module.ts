@@ -29,6 +29,7 @@ import { PaymentsResolver } from './payments/payments.resolver';
 import { ProductsModule } from './products/products.module';
 // import { AuthMiddleware } from './auth/auth.middleware';
 import { PesapalModule } from './pesapal/pesapal.module';
+import { BookingsModule } from './bookings/bookings.module';
 @Module({
   imports: [
     PrismaModule,
@@ -78,6 +79,7 @@ import { PesapalModule } from './pesapal/pesapal.module';
     NotificationsModule,
     ProductsModule,
     PesapalModule,
+    BookingsModule,
   ],
   controllers: [AppController, PaymentsController],
   providers: [

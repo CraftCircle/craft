@@ -10,10 +10,22 @@ import {
   NotificationType,
 } from '@prisma/client';
 import nodemailer from 'nodemailer';
+import { createICSFile } from '../bookings/utils/calendar';
+
+type CalendarEvent = {
+  title: string;
+  description: string;
+  start: Date;
+  end: Date;
+  location?: string;
+};
 
 type NotificationBody = {
   message: string;
-  additionalData?: object;
+  additionalData?: {
+    template?: string;
+    calendarEvent?: CalendarEvent;
+  };
 };
 
 @Injectable()
@@ -45,7 +57,7 @@ export class NotificationService {
     message: string;
     category: NotificationCategory;
     types?: NotificationType[];
-    additionalData?: object;
+    additionalData?: NotificationBody['additionalData'];
   }) {
     const body: NotificationBody = { message, additionalData };
     const results = [];
@@ -65,7 +77,7 @@ export class NotificationService {
     return results;
   }
 
-  async sendInAppNotification(
+  private async sendInAppNotification(
     recipientId: string,
     title: string,
     body: NotificationBody,
@@ -85,14 +97,14 @@ export class NotificationService {
         },
       });
     } catch (error) {
-      this.logger.error('Failed to send in-app notification', error);
+      this.logger.error('In-app notification failed', error);
       throw new InternalServerErrorException(
-        'Could not send in-app notification',
+        'Failed to send in-app notification',
       );
     }
   }
 
-  async sendEmailNotification(
+  private async sendEmailNotification(
     recipientId: string,
     title: string,
     body: NotificationBody,
@@ -104,24 +116,36 @@ export class NotificationService {
 
       const user = await this.prisma.user.findUnique({
         where: { id: recipientId },
-        select: { email: true },
+        select: { email: true, name: true },
       });
 
       if (!user?.email) {
-        this.logger.warn(`No email found for user ID: ${recipientId}`);
+        this.logger.warn(`Email not found for user ID: ${recipientId}`);
         return;
       }
 
-      const html = body.additionalData?.['template']
-        ? String(body.additionalData['template']?.html || '')
-        : this.defaultEmailHTML(body.message);
+      const template =
+        body.additionalData?.template || this.defaultEmailHTML(body.message);
+      const calendarEvent = body.additionalData?.calendarEvent;
+
+      const attachments = [];
+
+      if (calendarEvent) {
+        const icsBuffer = createICSFile(calendarEvent);
+        attachments.push({
+          filename: 'booking.ics',
+          content: icsBuffer,
+          contentType: 'text/calendar',
+        });
+      }
 
       await this.transporter.sendMail({
-        from: process.env.SENDER_EMAIL,
+        from: `"CraftCircle" <${process.env.SENDER_EMAIL}>`,
         to: user.email,
         subject: title,
         text: body.message,
-        html,
+        html: template,
+        attachments,
       });
 
       return await this.prisma.notification.create({
@@ -138,11 +162,10 @@ export class NotificationService {
     } catch (error) {
       this.logger.error('Failed to send email notification', error);
       throw new InternalServerErrorException(
-        'Could not send email notification',
+        'Failed to send email notification',
       );
     }
   }
-
   async getUserNotifications(userId: string, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
     return this.prisma.notification.findMany({
@@ -167,36 +190,7 @@ export class NotificationService {
 
   private defaultEmailHTML(message: string): string {
     return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body, html { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4; }
-          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
-          h1 { color: #000000; text-align: center; font-size: 28px; font-weight: bold; }
-          p { color: #333333; font-size: 16px; line-height: 1.6; text-align: center; }
-          .content { margin-top: 20px; padding: 20px; text-align: center; }
-          .logo { display: block; margin: 0 auto 20px; max-width: 150px; }
-          .footer { font-size: 12px; text-align: center; color: #999999; margin-top: 40px; }
-          .button { background-color: rgb(184, 153, 52); color: #000000; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; font-weight: bold; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <img src="https://res.cloudinary.com/djhugxcv9/image/upload/v1743468786/logo_ph9j6b.png" alt="CraftCircle Logo" class="logo" />
-          <div class="content">
-            <p>${message}</p>
-            <a href="https://craftcirclehq.com/" class="button">Get Started</a>
-          </div>
-          <div class="footer">
-            <p>If you have any questions, feel free to contact us at support@craftcirclehq.com</p>
-            <p>&copy; ${new Date().getFullYear()} CraftCircle. All rights reserved.</p>
-          </div>
-        </div>
-      </body>
-      </html>
+      <html><body><p>${message}</p></body></html>
     `;
   }
 
