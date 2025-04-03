@@ -147,15 +147,18 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type EventEntity {
+  User: UserEntity
   creatorId: String!
   date: DateTime!
   description: String!
   endTime: DateTime!
-  id: ID!
+  id: String!
   image: String!
   location: String!
   name: String!
   startTime: DateTime!
+  ticketTypes: [TicketTypeEntity]
+  tickets: [TicketEntity]
 }
 
 input GetNotificationsInput {
@@ -274,8 +277,8 @@ type Product {
 
 type Query {
   AllTickets: [TicketCreatedEntity!]!
-  EventEntity(id: String!): EventEntity!
   Events: [EventEntity!]!
+  GetEventById(id: String!): EventEntity!
   GetTicketById(ticketId: String!): TicketEntity!
   MyAllTickets: [TicketPurchasedEntity!]!
   MyCreatedEvents: [EventEntity!]!
@@ -350,13 +353,25 @@ type TicketPurchasedEntity {
   createdAt: DateTime!
   eventId: String!
   eventName: String
-  id: ID!
+  id: String!
   price: Float!
   quantity: Int!
   scanned: Boolean!
   ticketType: String!
   transactionId: String!
   updatedAt: DateTime
+}
+
+type TicketTypeEntity {
+  createdAt: DateTime!
+  event: EventEntity!
+  eventId: String!
+  id: String!
+  image: String!
+  price: Float!
+  quantity: Float!
+  ticketType: TicketTypeEnum!
+  updatedAt: DateTime!
 }
 
 """The type of ticket"""

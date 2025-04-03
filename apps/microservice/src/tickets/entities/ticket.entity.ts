@@ -16,7 +16,7 @@ registerEnumType(TicketTypeEnum, {
 
 @ObjectType()
 export class TicketEntity {
-  @Field(() => String)
+  @Field()
   id: string;
 
   @Field(() => Float)

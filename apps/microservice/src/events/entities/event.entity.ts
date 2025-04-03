@@ -1,8 +1,11 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field } from '@nestjs/graphql';
+import { TicketTypeEntity } from '../../tickets/entities/ticket-type.entity';
+import { TicketEntity } from '../../tickets/entities/ticket.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 
 @ObjectType()
 export class EventEntity {
-  @Field(() => ID)
+  @Field()
   id: string;
 
   @Field()
@@ -23,9 +26,18 @@ export class EventEntity {
   @Field()
   location: string;
 
-  @Field() 
+  @Field()
   image: string;
 
   @Field()
   creatorId: string;
+
+  @Field(() => UserEntity, { nullable: true })
+  User?: UserEntity;
+
+  @Field(() => [TicketEntity], { nullable: 'itemsAndList' })
+  tickets?: TicketEntity[];
+
+  @Field(() => [TicketTypeEntity], { nullable: 'itemsAndList' })
+  ticketTypes?: TicketTypeEntity[];
 }

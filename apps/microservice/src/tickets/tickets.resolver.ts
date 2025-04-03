@@ -29,7 +29,7 @@ export class TicketsResolver {
    */
   @Mutation(() => String, { name: 'uploadTicketImage' })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   async uploadTicketImage(
     @Args({ name: 'file', type: () => GraphQLUpload }) file: FileUpload,
   ): Promise<string> {
@@ -42,7 +42,7 @@ export class TicketsResolver {
    * Requires the admin to be authenticated and authorized.
    */
   @Mutation(() => TicketCreatedEntity, { name: 'CreateTicket' })
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   createTicketType(
     @Args('createTicketTypeDTO') createTicketTypeDTO: CreateTicketTypeDTO,
@@ -105,7 +105,7 @@ export class TicketsResolver {
    * Requires admin authentication and authorization.
    */
   @Query(() => [TicketCreatedEntity], { name: 'AllTickets' })
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async findAllTickets(@CurrentUser() admin: UserEntity) {
     return this.ticketsService.getAllTickets(admin);
@@ -116,7 +116,7 @@ export class TicketsResolver {
    * Requires admin authentication and authorization.
    */
   @Query(() => [TicketCreatedEntity], { name: 'TicketsForEvent' })
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async getTicketsForEvent(
     @Args('eventId', { type: () => String }) eventId: string,
@@ -130,7 +130,7 @@ export class TicketsResolver {
    * Requires admin authentication and authorization.
    */
   @Mutation(() => TicketEntity, { name: 'ScanTicket' })
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async scanTicket(
     @Args('ticketId', { type: () => String }) ticketId: string,
@@ -144,7 +144,7 @@ export class TicketsResolver {
    * Requires admin authentication and authorization.
    */
   @Mutation(() => TicketCreatedEntity, { name: 'UpdateTicketTypeQuantity' })
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async updateTicket(
     @Args('ticketId', { type: () => String }) ticketId: string,

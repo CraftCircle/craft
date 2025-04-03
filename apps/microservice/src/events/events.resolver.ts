@@ -30,7 +30,7 @@ export class EventsResolver {
      * @returns Cloudinary URL of the uploaded image.
      */
     @Mutation(() => String, { name: 'uploadEventImage' })
-    @Roles(Role.ADMIN, Role.SUPERADMIN, Role.USER)
+    @Roles(Role.ADMIN, Role.SUPERADMIN)
     @UseGuards(JwtAuthGuard, RolesGuard)
     async uploadEventImage(
       @Args({ name: 'file', type: () => GraphQLUpload }) file: FileUpload,
@@ -51,12 +51,13 @@ export class EventsResolver {
    * - Admin authentication and authorization.
    */
   @Mutation(() => EventEntity)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   createEvent(
     @Args('createEventInput') createEventInput: CreateEventInput,
     @CurrentUser() admin: UserEntity,
   ) {
+    console.log('🚀 Admin from JWT:', admin);
     return this.eventsService.createEvent(createEventInput, admin);
   }
 
@@ -70,7 +71,7 @@ export class EventsResolver {
    * - Admin authentication and authorization.
    */
   @Query(() => [EventEntity], { name: 'MyCreatedEvents' })
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async getAllEventsByCreator(
     @CurrentUser() admin: UserEntity,
@@ -94,7 +95,7 @@ export class EventsResolver {
    * @param id - The ID of the event.
    * @returns The event entity matching the ID.
    */
-  @Query(() => EventEntity, { name: 'EventEntity' })
+  @Query(() => EventEntity, { name: 'GetEventById' })
   async findOne(@Args('id', { type: () => String }) id: string) {
     return this.eventsService.getEventById(id);
   }
@@ -111,7 +112,7 @@ export class EventsResolver {
    * - Admin authentication and authorization.
    */
   @Mutation(() => EventEntity)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async updateEvent(
     @Args('id', { type: () => String }) id: string,

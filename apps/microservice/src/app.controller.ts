@@ -2,7 +2,6 @@ import { Controller, Get, Inject } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { User } from './auth/decorators/user.decorator';
 import { AccessTokenPayload } from './auth/types/AccessTokenPayload';
 @Controller()
 export class AppController {
@@ -13,7 +12,7 @@ export class AppController {
   ) {}
 
   @Get()
-  async getHello(@User() user: AccessTokenPayload): Promise<string> {
+  async getHello( user: AccessTokenPayload): Promise<string> {
     const resultApi = await firstValueFrom(this.clientApi.send('getHello', ''));
     const resultApiGateway = await firstValueFrom(
       this.clientApiGateway.send('getHello', ''),

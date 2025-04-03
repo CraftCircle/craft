@@ -57,6 +57,9 @@ export class UserService {
   }
 
   async findById(id: string) {
+    if (!id) {
+      throw new BadRequestException('User ID must be provided');
+    }
     const user = await this.prismaService.user.findUnique({
       where: { id },
       select: {

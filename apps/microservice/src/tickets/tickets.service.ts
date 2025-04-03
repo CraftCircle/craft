@@ -138,7 +138,7 @@ export class TicketsService {
       if (!ipnList || ipnList.length === 0) {
         const ipnResponse = await this.pesapalService.registerIPN(
           'POST',
-          'https://yourdomain.com/ipn',
+          'https://craftcirclehq.com/ipn',
         );
         ipnList = [{ ipn_id: ipnResponse.ipn_id }];
       }
@@ -151,7 +151,7 @@ export class TicketsService {
         currency: 'KES',
         amount,
         description: `Ticket purchase for ${event.name}`,
-        callback_url: 'https://yourdomain.com/payment-callback',
+        callback_url: 'https://craftcirclehq.com/payment-callback',
         notification_id: pesapalNotificationId,
         billing_address: {
           phone_number: phoneNumber,

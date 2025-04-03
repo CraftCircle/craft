@@ -48,6 +48,10 @@ export class EventsService {
         date,
         creatorId: user.id,
       },
+
+      include: {
+        User: true, 
+      },
     });
 
     // ✅ Send notification after event is created
@@ -108,7 +112,13 @@ export class EventsService {
   async getAllEventsByCreator(creatorId: string): Promise<EventEntity[]> {
     return this.prismaService.event.findMany({
       where: { creatorId },
-      include: { tickets: true },
+      include: {
+        tickets: { include: { user: true } },
+        ticketTypes: {
+          include: { event: true },
+        },
+        User: true,
+      },
     });
   }
 
