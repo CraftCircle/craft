@@ -54,19 +54,19 @@ export class AuthService {
 
     const { dateStr, timeStr } = formatDateTime(new Date());
 
-    await this.notificationService.send({
-      recipientId: user.id,
-      title: 'Login Notification',
-      message: `You logged into your CraftCircle account.`,
-      category: NotificationCategory.General,
-      types: [NotificationType.Email],
-      additionalData: {
-        template: loginNotificationTemplate(
-          user.name,
-          `${dateStr} at ${timeStr}`,
-        ),
-      },
-    });
+    // await this.notificationService.send({
+    //   recipientId: user.id,
+    //   title: 'Login Notification',
+    //   message: `You logged into your CraftCircle account.`,
+    //   category: NotificationCategory.General,
+    //   types: [NotificationType.Email],
+    //   additionalData: {
+    //     template: loginNotificationTemplate(
+    //       user.name,
+    //       `${dateStr} at ${timeStr}`,
+    //     ),
+    //   },
+    // });
 
     const payload = {
       email: user.email,

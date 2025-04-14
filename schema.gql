@@ -188,7 +188,7 @@ input MarkAsReadInput {
 type Mutation {
   CreateTicket(createTicketTypeDTO: CreateTicketTypeDTO!): TicketCreatedEntity!
   DeleteTickets(ticketId: String!): Boolean!
-  PurchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketPurchasedEntity!
+  PurchaseTicket(createTicketPurchaseDTO: CreateTicketPurchaseDTO!): TicketPurchaseResponse!
   ScanTicket(ticketId: String!): TicketEntity!
   UpdateTicketTypeQuantity(quantity: Int!, ticketId: String!): TicketCreatedEntity!
   bookAppointment(input: CreateBookingInput!): BookingEntity!
@@ -258,6 +258,33 @@ enum NotificationType {
   Push
 }
 
+type PesapalError {
+  call_back_url: String!
+  code: String!
+  error_type: String!
+  message: String!
+}
+
+type PesapalTransactionStatus {
+  account_number: String
+  amount: Float
+  call_back_url: String
+  confirmation_code: String
+  created_date: String
+  currency: String
+  description: String
+  error: PesapalError
+  merchant_reference: String
+  message: String
+  order_tracking_id: String
+  payment_account: String
+  payment_method: String
+  payment_status_code: String
+  payment_status_description: String
+  status: String
+  status_code: Float
+}
+
 type PostEntity {
   audio: String
   authorId: String!
@@ -292,7 +319,8 @@ type Query {
   getMyBookings(limit: Int! = 10, page: Int! = 1): [BookingEntity!]!
   getMyNotifications(filter: GetNotificationsInput!): [NotificationEntity!]!
   getRegisteredIPNs: [String!]!
-  getTransactionStatus(orderTrackingId: String!): String!
+  getTransactionStatus(orderTrackingId: String!): PesapalTransactionStatus!
+  pollTransactionStatus(orderTrackingId: String!): Boolean!
   post(id: String!): PostEntity!
   posts: [PostEntity!]!
   product(id: String!): Product!
@@ -347,6 +375,14 @@ type TicketEntity {
   ticketType: TicketTypeEnum!
   transactionId: String!
   user: UserEntity!
+}
+
+type TicketPurchaseResponse {
+  id: String!
+  pesapalOrderTrackingId: String!
+  price: Float!
+  redirectUrl: String!
+  ticketType: String!
 }
 
 type TicketPurchasedEntity {

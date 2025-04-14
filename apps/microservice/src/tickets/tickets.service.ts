@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationService } from '../notifications/notifications.service';
-// import { PaymentsService } from '../payments/payments.service';
 import { CreateTicketTypeDTO } from './dto/create-ticket-type.dto';
 import { CreateTicketPurchaseDTO } from './dto/create-ticket-purchase.dto';
 import { UserEntity } from '../users/entities/user.entity';
@@ -18,13 +17,13 @@ import { TicketEntity } from './entities/ticket.entity';
 import { ticketPurchaseTemplate } from '../notifications/templates/ticket';
 import { NotificationCategory, NotificationType } from '@prisma/client';
 import { ticketCreatedTemplate } from '../notifications/templates/ticket';
+import { TicketPurchaseResponse } from './entities/ticket-purchase-response.entity';
 
 @Injectable()
 export class TicketsService {
   private readonly logger = new Logger(TicketsService.name);
   constructor(
     private prisma: PrismaService,
-    // private paymentService: PaymentsService,
     private pesapalService: PesapalService,
     private notificationService: NotificationService,
   ) {}
@@ -103,7 +102,7 @@ export class TicketsService {
   async purchaseTicket(
     createTicketPurchaseDto: CreateTicketPurchaseDTO,
     user: UserEntity,
-  ): Promise<TicketPurchasedEntity> {
+  ): Promise<TicketPurchaseResponse> {
     const { ticketTypeId, quantity, eventId, phoneNumber } =
       createTicketPurchaseDto;
 
@@ -133,17 +132,17 @@ export class TicketsService {
 
       // Calculate Total Amount
       const amount = ticketType.price * quantity;
-      // Get Pesapal IPN (if not registered, register one)
-      let ipnList = await this.pesapalService.getRegisteredIPNs();
-      if (!ipnList || ipnList.length === 0) {
-        const ipnResponse = await this.pesapalService.registerIPN(
-          'POST',
-          'https://craftcirclehq.com/ipn',
-        );
-        ipnList = [{ ipn_id: ipnResponse.ipn_id }];
-      }
 
-      const pesapalNotificationId = ipnList[0].ipn_id;
+      // 4. Get or Register Pesapal IPN
+      const isDemo = process.env.NODE_ENV !== 'production';
+      const ipnUrl = isDemo
+        ? 'http://localhost:8080/ipn'
+        : 'https://craftcirclehq.com/ipn';
+
+      const pesapalNotificationId = await this.pesapalService.getOrRegisterIPN(
+        'GET',
+        ipnUrl,
+      );
 
       // Prepare Order Payload
       const orderPayload = {
@@ -151,7 +150,7 @@ export class TicketsService {
         currency: 'KES',
         amount,
         description: `Ticket purchase for ${event.name}`,
-        callback_url: 'https://craftcirclehq.com/payment-callback',
+        callback_url: 'http://localhost:8080/payment-callback',
         notification_id: pesapalNotificationId,
         billing_address: {
           phone_number: phoneNumber,
@@ -208,7 +207,11 @@ export class TicketsService {
         `Ticket reservation created for user ${user.email}. Waiting for payment confirmation.`,
       );
 
-      return reservation;
+      return {
+        ...reservation,
+        redirectUrl: orderResponse.redirect_url, // Ensure redirectUrl is included
+        pesapalOrderTrackingId: orderResponse.order_tracking_id,
+      };
     } catch (error) {
       this.logger.error('Error during ticket purchase:', error.message);
       throw new InternalServerErrorException(
@@ -254,6 +257,43 @@ export class TicketsService {
       this.logger.error('Failed to confirm ticket purchase:', error.message);
       throw new InternalServerErrorException(
         'Failed to confirm ticket purchase.',
+      );
+    }
+  }
+
+  async pollTransactionStatus(orderTrackingId: string): Promise<boolean> {
+    try {
+      const transaction = await this.prisma.transaction.findUnique({
+        where: { pesapalOrderId: orderTrackingId },
+      });
+
+      if (!transaction) {
+        throw new BadRequestException('Transaction not found.');
+      }
+
+      const paymentStatus =
+        await this.pesapalService.getTransactionStatus(orderTrackingId);
+
+      if (paymentStatus.payment_status_description === 'COMPLETED') {
+        await this.prisma.transaction.update({
+          where: { id: transaction.id },
+          data: { status: 'CONFIRMED' },
+        });
+
+        await this.prisma.ticket.updateMany({
+          where: { transactionId: transaction.id },
+          data: { scanned: false },
+        });
+
+        this.logger.log(`Payment confirmed via poll: ${orderTrackingId}`);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      this.logger.error('Polling failed:', error.message);
+      throw new InternalServerErrorException(
+        'Could not check transaction status.',
       );
     }
   }

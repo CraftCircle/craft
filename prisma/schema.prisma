@@ -72,6 +72,14 @@ model Transaction {
   updatedAt      DateTime          @updatedAt
 }
 
+model PesapalIPN {
+  id          String   @id @default(uuid())
+  ipnId       String   @unique
+  ipnUrl      String
+  type        String   // e.g., 'GET'
+  createdAt   DateTime @default(now())
+}
+
 model TicketType {
   id         String         @id @default(uuid()) @map("_id")
   ticketType TicketTypeEnum

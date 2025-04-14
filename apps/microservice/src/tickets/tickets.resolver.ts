@@ -15,6 +15,7 @@ import { TicketCreatedEntity } from './entities/ticket-created.entity';
 import { TicketPurchasedEntity } from './entities/ticket-purchased.entity';
 import { UploadHelper } from '../upload/utils/upload-helper';
 import { UploadService } from '../upload/upload.service';
+import { TicketPurchaseResponse } from './entities/ticket-purchase-response.entity';
 
 @Resolver()
 export class TicketsResolver {
@@ -55,7 +56,7 @@ export class TicketsResolver {
    * User purchases a ticket for an event.
    * Requires the user to be authenticated.
    */
-  @Mutation(() => TicketPurchasedEntity, { name: 'PurchaseTicket' })
+  @Mutation(() => TicketPurchaseResponse, { name: 'PurchaseTicket' })
   @UseGuards(JwtAuthGuard)
   async purchaseTicket(
     @Args('createTicketPurchaseDTO')
@@ -65,6 +66,12 @@ export class TicketsResolver {
     return this.ticketsService.purchaseTicket(createTicketPurchaseDTO, user);
   }
 
+  @Query(() => Boolean)
+  async pollTransactionStatus(
+    @Args('orderTrackingId') orderTrackingId: string,
+  ): Promise<boolean> {
+    return this.ticketsService.pollTransactionStatus(orderTrackingId);
+  }
   /**
    * Retrieves all tickets purchased by the authenticated user for a specific event.
    */

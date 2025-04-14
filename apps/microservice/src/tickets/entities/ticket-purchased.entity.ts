@@ -1,4 +1,4 @@
-import { ObjectType, Field,  Int, Float } from '@nestjs/graphql';
+import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
 
 @ObjectType()
 export class TicketPurchasedEntity {
@@ -19,6 +19,7 @@ export class TicketPurchasedEntity {
 
   @Field(() => Boolean)
   scanned: boolean;
+
 
   @Field(() => String)
   eventId: string;
