@@ -134,19 +134,12 @@ export class TicketsService {
       const amount = ticketType.price * quantity;
 
       // 4. Get or Register Pesapal IPN
-      const isDemo = process.env.NODE_ENV !== 'production';
-      const ipnUrl = isDemo
-        ? 'http://localhost:8080/ipn'
-        : 'https://craftcirclehq.com/ipn';
-
-      const pesapalNotificationId = await this.pesapalService.getOrRegisterIPN(
-        'GET',
-        ipnUrl,
-      );
+      const pesapalNotificationId =
+        await this.pesapalService.getOrRegisterIPN('GET');
 
       // Prepare Order Payload
       const orderPayload = {
-        id: `TXN-${Date.now()}`, // Unique transaction reference
+        id: `TXN-${Date.now()}`,
         currency: 'KES',
         amount,
         description: `Ticket purchase for ${event.name}`,

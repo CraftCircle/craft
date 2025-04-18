@@ -30,6 +30,7 @@ import { ProductsModule } from './products/products.module';
 // import { AuthMiddleware } from './auth/auth.middleware';
 import { PesapalModule } from './pesapal/pesapal.module';
 import { BookingsModule } from './bookings/bookings.module';
+import { NgrokModule } from './ngrok/ngrok.module';
 @Module({
   imports: [
     PrismaModule,
@@ -80,6 +81,7 @@ import { BookingsModule } from './bookings/bookings.module';
     ProductsModule,
     PesapalModule,
     BookingsModule,
+    NgrokModule
   ],
   controllers: [AppController, PaymentsController],
   providers: [

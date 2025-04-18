@@ -4,6 +4,8 @@ import { HttpService } from '@nestjs/axios';
 import { CreatePesapalAuth } from './dto/pesapal.auth';
 import { firstValueFrom } from 'rxjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { PesapalIPN } from '@prisma/client';
+import { NgrokService } from '../ngrok/ngrok.service';
 
 @Injectable()
 export class PesapalService {
@@ -16,12 +18,15 @@ export class PesapalService {
     private readonly httpService: HttpService,
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly ngrokService: NgrokService,
   ) {
     this.baseUrl =
       this.configService.get<string>('PESAPAL_ENV') === 'demo'
         ? 'https://cybqa.pesapal.com/pesapalv3/api'
         : 'https://pay.pesapal.com/v3/api';
   }
+
+
 
   private async refreshToken(): Promise<void> {
     const consumerKey = this.configService.get<string>('PESAPAL_CONSUMER_KEY');
@@ -70,12 +75,13 @@ export class PesapalService {
 
   async getAccessToken(forceRefresh = false): Promise<string> {
     const now = new Date();
+    const buffer = 30 * 1000; // 30 seconds buffer
 
     if (
       !forceRefresh &&
       this.accessToken &&
       this.tokenExpiry &&
-      now < this.tokenExpiry
+      now.getTime() + buffer < this.tokenExpiry.getTime()
     ) {
       this.logger.log('Using cached access token.');
       return this.accessToken;
@@ -96,72 +102,6 @@ export class PesapalService {
       const token = await this.getAccessToken(true);
       return await fn(token);
     }
-  }
-
-  async getTransactionStatus(orderTrackingId: string): Promise<any> {
-    const url = `${this.baseUrl}/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`;
-
-    this.logger.log(
-      `Fetching transaction status for orderTrackingId: ${orderTrackingId}`,
-    );
-
-    return this.withTokenRetry(async (token) => {
-      this.logger.log(`Using access token: ${token}`);
-      try {
-        const response = await firstValueFrom(
-          this.httpService.get(url, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/json',
-            },
-          }),
-        );
-
-        this.logger.log(
-          'Raw Pesapal transaction status response:',
-          JSON.stringify(response.data),
-        );
-
-        if (!response.data) {
-          this.logger.warn('No data received from Pesapal.');
-          throw new HttpException(
-            'No data received from Pesapal',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        }
-
-        const data = response.data;
-
-        return {
-          status: data.status ?? null,
-          message: data.message ?? null,
-          description: data.description ?? null,
-          confirmation_code: data.confirmation_code ?? null,
-          payment_method: data.payment_method ?? null,
-          amount: data.amount ?? null,
-          created_date: data.created_date ?? null,
-          order_tracking_id: data.order_tracking_id ?? null,
-          merchant_reference: data.merchant_reference ?? null,
-          payment_account: data.payment_account ?? null,
-          call_back_url: data.call_back_url ?? null,
-          payment_status_code: data.payment_status_code ?? null,
-          payment_status_description: data.payment_status_description ?? null,
-          account_number: data.account_number ?? null,
-          currency: data.currency ?? null,
-          status_code: data.status_code ?? null,
-          error: data.error ?? null,
-        };
-      } catch (error) {
-        this.logger.error(
-          'Error fetching transaction status:',
-          error?.response?.data || error.message,
-        );
-        throw new HttpException(
-          'Failed to fetch transaction status',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    });
   }
 
   async submitOrder(orderPayload: any): Promise<any> {
@@ -186,7 +126,76 @@ export class PesapalService {
     });
   }
 
-  async getRegisteredIPNs(): Promise<any> {
+  async getTransactionStatus(orderTrackingId: string): Promise<any> {
+    const url = `${this.baseUrl}/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`;
+
+    return this.withTokenRetry(async (token) => {
+      const response = await firstValueFrom(
+        this.httpService.get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }),
+      );
+
+      return response.data ?? null;
+    });
+  }
+
+  async getOrRegisterIPN(
+    ipnNotificationType: 'GET' | 'POST',
+    ipnUrl?: string,
+  ): Promise<string> {
+    const finalIpnUrl = ipnUrl ?? `${this.ngrokService.getTunnelUrl()}/ipn`;
+
+    const existing = await this.prisma.pesapalIPN.findFirst({
+      where: { ipnUrl: finalIpnUrl, type: ipnNotificationType },
+    });
+
+    if (existing) {
+      this.logger.log(`Reusing existing IPN: ${existing.ipnId}`);
+      return existing.ipnId;
+    }
+
+    const registerUrl = `${this.baseUrl}/URLSetup/RegisterIPN`;
+
+    const responseData = await this.withTokenRetry(async (token) => {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          registerUrl,
+          {
+            url: finalIpnUrl,
+            ipn_notification_type: ipnNotificationType,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+      );
+
+      return response.data;
+    });
+
+    const { url, ipn_id, ipn_notification_type_description } = responseData;
+
+    const saved = await this.prisma.pesapalIPN.create({
+      data: {
+        ipnId: ipn_id,
+        ipnUrl: url,
+        type: ipn_notification_type_description,
+      },
+    });
+
+    this.logger.log(`New IPN saved to DB: ${saved.ipnId}`);
+    return saved.ipnId;
+  }
+
+  async fetchRegisteredIPNDetails(): Promise<PesapalIPN[]> {
     const url = `${this.baseUrl}/URLSetup/GetIpnList`;
 
     return this.withTokenRetry(async (token) => {
@@ -199,11 +208,7 @@ export class PesapalService {
         }),
       );
 
-      this.logger.debug(
-        'Pesapal registered IPNs response:',
-        JSON.stringify(response.data, null, 2),
-      );
-      return response.data;
+      return response.data ?? [];
     });
   }
 
@@ -221,10 +226,6 @@ export class PesapalService {
         }),
       );
 
-      this.logger.debug(
-        'Pesapal refund response:',
-        JSON.stringify(response.data, null, 2),
-      );
       return response.data;
     });
   }
@@ -247,65 +248,19 @@ export class PesapalService {
         ),
       );
 
-      this.logger.debug(
-        'Pesapal cancel order response:',
-        JSON.stringify(response.data, null, 2),
-      );
       return response.data;
     });
   }
 
-  async getOrRegisterIPN(
-    ipnNotificationType: 'GET' | 'POST',
-    ipnUrl: string,
-  ): Promise<string> {
-    const existing = await this.prisma.pesapalIPN.findFirst({
-      where: {
-        ipnUrl,
-        type: ipnNotificationType,
-      },
+  //Register IPN for local tunnel
+  async registerLocalTunnel(tunnelUrl: string): Promise<void> {
+    const ipnUrl = `${tunnelUrl}/ipn`;
+    const exists = await this.prisma.pesapalIPN.findFirst({
+      where: { ipnUrl },
     });
-
-    if (existing) {
-      this.logger.log(`Reusing existing IPN: ${existing.ipnId}`);
-      return existing.ipnId;
+    if (!exists) {
+      await this.getOrRegisterIPN('GET', ipnUrl);
+      this.logger.log(`Registered local tunnel IPN: ${ipnUrl}`);
     }
-
-    const url = `${this.baseUrl}/URLSetup/RegisterIPN`;
-
-    const data = await this.withTokenRetry(async (token) => {
-      const response = await firstValueFrom(
-        this.httpService.post(
-          url,
-          {
-            url: ipnUrl,
-            ipn_notification_type: ipnNotificationType,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-          },
-        ),
-      );
-      this.logger.debug(
-        'Pesapal register IPN response:',
-        JSON.stringify(response.data, null, 2),
-      );
-      return response.data;
-    });
-
-    const saved = await this.prisma.pesapalIPN.create({
-      data: {
-        ipnId: data.ipn_id,
-        ipnUrl,
-        type: ipnNotificationType,
-      },
-    });
-
-    this.logger.log(`New IPN saved to DB: ${saved.ipnId}`);
-    return saved.ipnId;
   }
 }

@@ -1,7 +1,22 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
-export class Pesapal {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+export class PesapalIPN {
+  @Field()
+  ipn_id: string;
+
+  @Field()
+  url: string;
+
+  @Field()
+  created_date: string;
+
+  @Field()
+  ipn_notification_type_description: string;
+
+  @Field()
+  ipn_status_description: string;
+
+  @Field()
+  status: string;
 }

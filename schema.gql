@@ -206,7 +206,7 @@ type Mutation {
   markNotificationAsRead(input: MarkAsReadInput!): Boolean!
   multipleUpload(files: [Upload!]!): [String!]!
   register(registerInput: RegisterRequestDTO!): RegisterResponseDTO!
-  registerIPN(ipnNotificationType: String!, ipnUrl: String!): String!
+  registerIPN(ipnNotificationType: String!, ipnUrl: String): String!
   registerUrl: String!
   removePost(id: String!): PostEntity!
   removeUser(email: String!): UserEntity!
@@ -265,6 +265,15 @@ type PesapalError {
   message: String!
 }
 
+type PesapalIPN {
+  created_date: String!
+  ipn_id: String!
+  ipn_notification_type_description: String!
+  ipn_status_description: String!
+  status: String!
+  url: String!
+}
+
 type PesapalTransactionStatus {
   account_number: String
   amount: Float
@@ -318,7 +327,7 @@ type Query {
   getMyAvailability: [AvailabilityEntity!]!
   getMyBookings(limit: Int! = 10, page: Int! = 1): [BookingEntity!]!
   getMyNotifications(filter: GetNotificationsInput!): [NotificationEntity!]!
-  getRegisteredIPNs: [String!]!
+  getRegisteredIPNs: [PesapalIPN!]!
   getTransactionStatus(orderTrackingId: String!): PesapalTransactionStatus!
   pollTransactionStatus(orderTrackingId: String!): Boolean!
   post(id: String!): PostEntity!
